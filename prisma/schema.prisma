@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id      String   @id @default(uuid())
+  name    String   @unique
+  members Member[]
+}
+
+model Member {
+  id           String  @id @default(uuid())
+  fullName     String
+  email        String? @unique
+  phone        String?
+  passwordHash String?
+
+  // --- Profile Enhancements (Saved in Member table) ---
+  idNumber   String?   @unique
+  birthDate  DateTime?
+  // Use String for SQLite compatibility (STUDENT, EMPLOYED, SELF_EMPLOYED)
+  memberType String    @default("STUDENT")
+  isActive   Boolean   @default(true) // Add this for Soft Delete
+  // ---------------------------------------------------
+
+  roleId    String?
+  role      Role?    @relation(fields: [roleId], references: [id])
+  createdAt DateTime @default(now())
+
+  attendance    Attendance[]
+  contributions Contribution[]
+  expenses      Expense[]
+}
+
+model Activity {
+  id           String   @id @default(uuid())
+  name         String
+  date         DateTime
+  time         String?
+  location     String?
+  attendanceBy String?
+  createdAt    DateTime @default(now())
+
+  attendance Attendance[]
+}
+
+model Attendance {
+  id         String   @id @default(uuid())
+  memberId   String
+  activityId String
+  status     String   @default("Present")
+  takenAt    DateTime @default(now())
+
+  member   Member   @relation(fields: [memberId], references: [id])
+  activity Activity @relation(fields: [activityId], references: [id])
+
+  @@unique([memberId, activityId])
+  @@index([activityId])
+}
+
+model Contribution {
+  id        String   @id @default(uuid())
+  memberId  String
+  eventId   String?
+  amount    Float
+  note      String?
+  createdAt DateTime @default(now())
+
+  member Member             @relation(fields: [memberId], references: [id])
+  event  ContributionEvent? @relation(fields: [eventId], references: [id])
+}
+
+model ContributionEvent {
+  id            String   @id @default(uuid())
+  name          String
+  date          DateTime
+  actualTotal   Float    @default(0)
+  amountSpent   Float    @default(0)
+  expenseReason String?
+  type          String   @default("MONTHLY") // e.g., MONTHLY or WEDDING
+  locked        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  contributions Contribution[]
+  Expense       Expense[]
+}
+
+model Expense {
+  id        String   @id @default(uuid())
+  eventId   String
+  amount    Float
+  reason    String?
+  createdAt DateTime @default(now())
+
+  event    ContributionEvent @relation(fields: [eventId], references: [id])
+  Member   Member?           @relation(fields: [memberId], references: [id])
+  memberId String?
+}

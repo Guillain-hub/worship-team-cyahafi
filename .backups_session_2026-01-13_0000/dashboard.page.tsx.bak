@@ -1,0 +1,334 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { 
+  Users, Calendar, HandCoins, Loader2, 
+  Mic2, Bell, Clock, CheckCircle2, Trash2, Megaphone, AlertCircle, Edit3
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { useAuth } from "@/components/auth-provider"
+
+export default function DashboardPage() {
+  const { user } = useAuth()
+  const roleName = typeof user?.role === 'object' && user?.role && "name" in user?.role ? (user?.role as any).name : user?.role
+  const [isLoading, setIsLoading] = useState(true)
+  const [members, setMembers] = useState([])
+  const [netBalance, setNetBalance] = useState<number | null>(null)
+  const [activities, setActivities] = useState<any[]>([])
+  const [avgAttendance, setAvgAttendance] = useState<string>('—')
+  const [announcement, setAnnouncement] = useState("")
+  const [announcementsList, setAnnouncementsList] = useState<any[]>([])
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingContent, setEditingContent] = useState<string>("")
+
+  useEffect(() => {
+    async function init() {
+      try {
+        const [mRes, aRes, annRes, cRes, eRes] = await Promise.all([
+          fetch('/api/members').then(r => r.json()),
+          fetch('/api/activities').then(r => r.json()),
+          fetch('/api/announcements').then(r => r.json()),
+          fetch('/api/contributions').then(r => r.json()),
+          fetch('/api/expenses').then(r => r.json()),
+        ])
+        const membersData = mRes.members || []
+        const activitiesData = aRes.activities || []
+        setMembers(membersData)
+        setActivities(activitiesData)
+        setAnnouncementsList(annRes.announcements || [])
+
+        // Compute net balance: sum of contributions (actualTotal) minus sum of expense amounts
+        const contribEvents = cRes.events || []
+        const totalContrib = contribEvents.reduce((s: number, ev: any) => s + (Number(ev.actualTotal) || 0), 0)
+        const expenses = eRes.expenses || []
+        const totalExpenses = expenses.reduce((s: number, ex: any) => s + (Number(ex.amount) || 0), 0)
+        setNetBalance(totalContrib - totalExpenses)
+
+        // Fetch attendance for activities so we can mark ones with saved attendance
+        // as "recent" even if their date is today or later. This lets completed
+        // activities move to Recent once all members have been marked.
+        const actsWithAttendance = await Promise.all(activitiesData.map(async (act: any) => {
+          try {
+            const res = await fetch(`/api/activities/${act.id}/attendance`)
+            const json = await res.json()
+            const attendance = json.attendance || []
+            const present = attendance.filter((r: any) => String(r.status).toLowerCase().startsWith('p')).length
+            const excused = attendance.filter((r: any) => String(r.status).toLowerCase().startsWith('e')).length
+            act.attendedNbr = present
+            act.excusedNbr = excused
+            act.missedNbr = Math.max(0, membersData.length - present - excused)
+            act.attendanceSaved = attendance.length > 0
+          } catch (e) {
+            act.attendedNbr = act.attendedNbr || 0
+            act.missedNbr = Math.max(0, membersData.length - (act.attendedNbr || 0))
+            act.attendanceSaved = !!act.attendanceSaved
+          }
+          return act
+        }))
+        setActivities(actsWithAttendance)
+        // compute average attendance across activities (skip if members missing)
+        try {
+          if (membersData.length > 0 && activitiesData.length > 0) {
+            const percentList = activitiesData.map((a: any) => {
+              const attended = Number(a.attendedNbr || 0)
+              return membersData.length > 0 ? (attended / membersData.length) : 0
+            })
+            const avg = Math.round((percentList.reduce((s: number, p: number) => s + p, 0) / Math.max(1, percentList.length)) * 100)
+            setAvgAttendance(`${avg}%`)
+          }
+        } catch (e) { /* ignore */ }
+      } catch (e) { console.error(e) } 
+      finally { setIsLoading(false) }
+    }
+    init()
+  }, [])
+
+  const timeAgo = (iso?: string) => {
+    if (!iso) return ''
+    try {
+      const d = new Date(iso)
+      const diff = Date.now() - d.getTime()
+      const sec = Math.floor(diff / 1000)
+      if (sec < 60) return `${sec}s ago`
+      const min = Math.floor(sec / 60)
+      if (min < 60) return `${min}m ago`
+      const hr = Math.floor(min / 60)
+      if (hr < 24) return `${hr}h ago`
+      const days = Math.floor(hr / 24)
+      return `${days}d ago`
+    } catch (e) { return '' }
+  }
+
+  // Activity logic
+  // Activity logic — compare by date-only (start of day) so events scheduled for today count as upcoming
+  const now = new Date()
+  const startOfToday = new Date(now)
+  startOfToday.setHours(0,0,0,0)
+  const startOfTomorrow = new Date(startOfToday)
+  startOfTomorrow.setDate(startOfTomorrow.getDate() + 1)
+
+  const upcoming = activities
+    .filter(a => {
+      const d = a?.date ? new Date(a.date) : null
+      if (!d) return false
+      // upcoming if event date is today or later
+      return d.getTime() >= startOfToday.getTime()
+    })
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
+  const recent = activities
+    .filter(a => {
+      const d = a?.date ? new Date(a.date) : null
+      if (!d) return false
+      // recent (completed): any event date strictly before today
+      return d.getTime() < startOfToday.getTime()
+    })
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 3)
+
+  const handleBroadcastMessage = async () => {
+    if (!announcement.trim()) return
+    try {
+      const payload = { 
+        author: user?.fullName || 'Leader', 
+        content: announcement,
+        createdAt: new Date().toISOString()
+      }
+      const res = await fetch('/api/announcements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      const j = await res.json()
+      if (j.announcement) {
+        setAnnouncementsList(prev => [j.announcement, ...prev])
+        setAnnouncement('')
+      }
+    } catch (e) { console.error(e) }
+  }
+
+  const handleDeleteAnnouncement = async (id: string) => {
+    if (!confirm("Delete this broadcast?")) return
+    try {
+      const res = await fetch(`/api/announcements/${id}`, { method: 'DELETE' })
+      const j = await res.json()
+      if (!res.ok) return alert(j.error || 'Failed to delete')
+      setAnnouncementsList(prev => prev.filter(a => String(a.id) !== String(id)))
+    } catch (e) { console.error(e) }
+  }
+
+  const startEdit = (ann: any) => {
+    setEditingId(String(ann.id))
+    setEditingContent(ann.content || '')
+  }
+
+  const cancelEdit = () => { setEditingId(null); setEditingContent('') }
+
+  const saveEdit = async (id: string) => {
+    if (!editingContent.trim()) return alert('Content required')
+    try {
+      const res = await fetch(`/api/announcements/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: editingContent })
+      })
+      const j = await res.json()
+      if (!res.ok) return alert(j.error || 'Failed to update')
+      setAnnouncementsList(prev => prev.map(a => String(a.id) === String(id) ? j.announcement : a))
+      setEditingId(null)
+      setEditingContent('')
+    } catch (e) { console.error(e) }
+  }
+
+  const rwf = (n: number) => new Intl.NumberFormat('en-RW', { style: 'currency', currency: 'RWF', maximumFractionDigits: 0 }).format(n)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}  )    </div>      </div>        </div>          </div>            </div>              ))}                </div>                  </div>                    <div className="text-destructive font-bold whitespace-nowrap">M: {act.missedNbr ?? Math.max(0, members.length - (act.attendedNbr || 0))}</div>                    <div className="text-emerald-600 font-bold whitespace-nowrap">P: {act.attendedNbr ?? 0}</div>                  <div className="flex items-center gap-2 sm:gap-3 text-[9px] sm:text-[12px] flex-shrink-0">                  </div>                    </div>                      <p className="text-[8px] sm:text-[10px] font-medium text-muted-foreground uppercase">{new Date(act.date).toLocaleDateString()}</p>                      <p className="font-bold uppercase tracking-tighter text-muted-foreground truncate">{act.name}</p>                    <div className="min-w-0">                    <div className="w-1 bg-muted rounded-full flex-shrink-0" />                  <div className="flex items-center gap-2 sm:gap-4 min-w-0">                <div key={act.id} className="flex gap-2 sm:gap-4 items-center justify-between flex-wrap text-xs sm:text-sm">              {recent.map((act) => (            <div className="space-y-3 sm:space-y-4 opacity-60">            </h3>              <CheckCircle2 size={12} className="sm:w-4 sm:h-4 flex-shrink-0" /> Recently Completed            <h3 className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">          <div className="space-y-4 sm:space-y-6 pt-4 sm:pt-6 border-t border-border/30">          {/* RECENT */}          </div>            </div>              )}                ))                  </div>                    <div className="text-[7px] sm:text-[8px] font-black px-1.5 sm:px-2 py-0.5 bg-primary text-primary-foreground rounded uppercase tracking-tighter whitespace-nowrap flex-shrink-0">Live Soon</div>                    </div>                      </div>                        </p>                          {new Date(act.date).toDateString()} @ {act.time || "TBA"}                        <p className="text-[8px] sm:text-[10px] font-bold text-muted-foreground uppercase">                        <p className="text-xs sm:text-sm font-black uppercase tracking-tighter truncate">{act.name}</p>                      <div className="min-w-0">                      <div className="w-1 bg-primary rounded-full flex-shrink-0" />                    <div className="flex gap-2 sm:gap-4 min-w-0 flex-1">                  <div key={act.id} className="flex items-center justify-between group gap-2">                upcoming.map((act) => (              ) : (                <p className="text-xs text-muted-foreground italic">No events scheduled.</p>              {upcoming.length === 0 ? (            <div className="space-y-3 sm:space-y-4">            </h3>              <AlertCircle size={12} className="sm:w-4 sm:h-4 flex-shrink-0" /> Upcoming Events            <h3 className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-primary flex items-center gap-2">          <div className="space-y-4 sm:space-y-6">          {/* UPCOMING */}                  <div className="lg:col-span-5 space-y-8 sm:space-y-12">        {/* RIGHT: SCHEDULE (Upcoming & Recent) */}        </div>          </div>            ))}              </div>                    </div>                      )}                        </div>                          </button>                            <Trash2 size={12} className="sm:w-4 sm:h-4" />                          >                            aria-label="Delete announcement"                            className="p-1 text-muted-foreground hover:text-destructive"                            onClick={() => handleDeleteAnnouncement(ann.id)}                          <button                           <button onClick={() => startEdit(ann)} className="p-1 text-muted-foreground hover:text-primary" aria-label="Edit announcement"><Edit3 size={12} className="sm:w-4 sm:h-4" /></button>                        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">                      {(roleName === 'Leader' || roleName === 'Admin') && (                      </div>                        )}                          <p className="text-xs sm:text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap break-words">{ann.content}</p>                        ) : (                          </div>                            </div>                              <Button size="sm" onClick={() => saveEdit(String(ann.id))} className="text-xs sm:text-sm">Save</Button>                              <Button variant="outline" size="sm" onClick={cancelEdit} className="text-xs sm:text-sm">Cancel</Button>                            <div className="flex gap-2 justify-end">                            <Textarea value={editingContent} onChange={(e) => setEditingContent(e.target.value)} className="min-h-[60px] sm:min-h-[80px] text-xs sm:text-sm" />                          <div className="space-y-2">                        {editingId === String(ann.id) ? (                        </div>                          </span>                            {timeAgo(ann.time || ann.createdAt)} • {(ann.time || ann.createdAt) ? new Date(ann.time || ann.createdAt).toLocaleDateString() : ''}                          <span className="text-[8px] sm:text-[10px] font-medium text-muted-foreground whitespace-nowrap">                          <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-tight text-primary">{ann.author || 'System'}</span>                        <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-1">                      <div className="flex-1 min-w-0">                <div className="flex justify-between items-start gap-3 sm:gap-4">              <div key={ann.id} className="group border-l-2 border-primary/20 pl-3 sm:pl-4 py-2 sm:py-3 relative bg-card rounded-md">            {announcementsList.map((ann) => (          <div className="space-y-6 sm:space-y-8">          </div>            )}              <p className="text-xs text-muted-foreground">Announcements are posted by Leaders or Admins. You can view them below.</p>            ) : (              </>                </div>                  <Button onClick={handleBroadcastMessage} size="sm" className="rounded-full px-4 sm:px-6 font-black uppercase text-[9px] sm:text-[10px] tracking-widest text-xs sm:text-sm">Post</Button>                <div className="flex justify-end">                />                  className="bg-muted/40 border-none rounded-xl sm:rounded-2xl p-2 sm:p-3 text-xs sm:text-sm focus-visible:ring-1 focus-visible:ring-primary/20 min-h-[60px] sm:min-h-[80px] resize-none w-full"                  onChange={(e) => setAnnouncement(e.target.value)}                  value={announcement}                  placeholder="Post a team update..."                <Textarea               <>            {roleName === 'Leader' || roleName === 'Admin' ? (            </h3>              <Megaphone size={12} className="sm:w-4 sm:h-4" /> New Broadcast            <h3 className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 text-muted-foreground">          <div className="space-y-3 sm:space-y-4">        <div className="lg:col-span-7 space-y-6 sm:space-y-10">        {/* LEFT: BROADCAST FEED */}              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 lg:gap-16">      </div>        ))}          </div>            <h2 className="text-lg sm:text-2xl font-black tracking-tighter">{item.val}</h2>            </p>              <item.icon size={12} className="text-primary flex-shrink-0" /> {item.label}            <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1 sm:gap-2">          <div key={i} className="space-y-1">        ].map((item, i) => (          { label: "Avg Attendance", val: avgAttendance, icon: Mic2 },          { label: "Total Events", val: activities.length, icon: Calendar },          { label: "Treasury", val: netBalance === null ? '—' : rwf(netBalance), icon: HandCoins },          { label: "Active Members", val: members.length, icon: Users },        {[      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 py-4 sm:py-6 border-b border-border/50">      {/* RESTORED SUMMARY STATS */}          <div className="max-w-6xl mx-auto space-y-8 sm:space-y-12 pb-20 px-2 sm:px-4 pt-4 sm:pt-8 text-foreground bg-background">
+  return (  if (isLoading) return <div className="h-96 w-full flex items-center justify-center"><Loader2 className="animate-spin text-primary" size={24} /></div>  

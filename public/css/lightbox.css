@@ -1,0 +1,189 @@
+/* Lightbox Fade In/Out Animations */
+@keyframes lightboxFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes lightboxFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes imageFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes imageFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Gallery Image Stack Hover Effects */
+@keyframes imageSpread {
+  from {
+    transform: translateX(0) translateY(0);
+  }
+  to {
+    transform: translateX(var(--spread-x)) translateY(var(--spread-y));
+  }
+}
+
+/* Smooth transitions for accessibility */
+@media (prefers-reduced-motion: no-preference) {
+  .lightbox-enter {
+    animation: lightboxFadeIn 0.3s ease-out forwards;
+  }
+
+  .lightbox-exit {
+    animation: lightboxFadeOut 0.3s ease-in forwards;
+  }
+
+  .image-enter {
+    animation: imageFadeIn 0.5s ease-out forwards;
+  }
+
+  .image-exit {
+    animation: imageFadeOut 0.5s ease-in forwards;
+  }
+
+  .gallery-image-stack {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s ease,
+                opacity 0.3s ease;
+  }
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .lightbox-enter,
+  .lightbox-exit,
+  .image-enter,
+  .image-exit,
+  .gallery-image-stack {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Accessibility focus styles */
+.gallery-image-stack:focus {
+  outline: 3px solid rgba(251, 146, 60, 0.7);
+  outline-offset: 2px;
+}
+
+button:focus {
+  outline: 3px solid rgba(251, 146, 60, 0.7);
+  outline-offset: 2px;
+}
+
+/* Cursor styles for interactive elements */
+.gallery-image-stack {
+  cursor: pointer !important;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.gallery-image-stack:hover {
+  cursor: pointer !important;
+}
+
+.gallery-image-stack img {
+  cursor: pointer !important;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+#gallery-lightbox-modal {
+  cursor: default;
+}
+
+#gallery-lightbox-modal button {
+  cursor: pointer !important;
+}
+
+[role="button"] {
+  cursor: pointer !important;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+  .lightbox-enter,
+  .lightbox-exit,
+  .image-enter,
+  .image-exit {
+    opacity: 1 !important;
+    animation-duration: 0.15s !important;
+  }
+
+  .gallery-image-stack:focus {
+    outline: 4px solid currentColor;
+    outline-offset: 4px;
+  }
+}
+
+/* Global cursor styles for all interactive elements */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+select {
+  cursor: pointer;
+}
+
+/* Dark mode cursor customization */
+@media (prefers-color-scheme: dark) {
+  #gallery-lightbox-modal {
+    cursor: default;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .gallery-image-stack {
+    min-height: 44px;
+  }
+}
+
+/* Print styles */
+@media print {
+  #gallery-lightbox-modal {
+    display: none !important;
+  }
+
+  .lightbox-enter,
+  .lightbox-exit,
+  .image-enter,
+  .image-exit {
+    animation: none !important;
+  }
+}

@@ -1,0 +1,22 @@
+name: "Notify Birthdays (daily)"
+
+on:
+  schedule:
+    - cron: '0 8 * * *' # Run daily at 08:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify birthdays via API
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          KEY: ${{ secrets.BIRTHDAY_JOB_KEY }}
+          DAYS: 2
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$KEY" ]; then
+            echo "Set APP_URL and BIRTHDAY_JOB_KEY in repo secrets"; exit 1
+          fi
+          echo "Calling $APP_URL/api/admin/notify-birthdays?days=$DAYS"
+          curl -sSf -X POST "$APP_URL/api/admin/notify-birthdays?days=$DAYS&key=$KEY" -H "Accept: application/json" || exit 1
