@@ -113,7 +113,8 @@ export default function LoginPage() {
     }
 
     const memberRole = (res as any)?.member?.role
-    if (memberRole === 'Member') {
+    // Treat null role as 'Member' - new members without assigned role should go to member dashboard
+    if (memberRole === 'Member' || memberRole === null || memberRole === undefined) {
       router.push('/dashboard/member')
     } else {
       router.push('/dashboard')
