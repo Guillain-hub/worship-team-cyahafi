@@ -50,6 +50,10 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ member: safeMember }, { status: 200, headers: { 'Set-Cookie': cookie } })
   } catch (err: any) {
-    return NextResponse.json({ error: err?.message ?? 'Server error' }, { status: 500 })
+    const message = err?.message ?? 'Server error'
+    if (typeof message === 'string' && message.includes('Environment variable not found: DATABASE_URL')) {
+      return NextResponse.json({ error: 'Server misconfiguration: DATABASE_URL is not set' }, { status: 500 })
+    }
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
