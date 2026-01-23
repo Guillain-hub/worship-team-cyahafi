@@ -10,13 +10,21 @@ export default function RoleGuard() {
   const router = useRouter()
 
   useEffect(() => {
+    // 🔹 FIX 3: Delay redirect until role is guaranteed
     if (loading) return
+    
+    if (!user) return
+    
     const role = typeof user?.role === 'object' ? user.role?.name : user?.role
     
+    // 🔹 FIX 2: NEVER default to leader - explicitly check role
     // Prevent Members from accessing admin/leader dashboard
-    if (user && role === 'Member') {
+    if (role === 'Member') {
       // Allow member to access only their profile and settings
-      if (!pathname?.startsWith('/dashboard/member') && !pathname?.startsWith('/dashboard/settings') && pathname?.startsWith('/dashboard')) {
+      const isAllowedPath = pathname?.startsWith('/dashboard/member') || pathname?.startsWith('/dashboard/settings')
+      const isDashboardPath = pathname?.startsWith('/dashboard')
+      
+      if (isDashboardPath && !isAllowedPath) {
         router.replace('/dashboard/member')
       }
     }

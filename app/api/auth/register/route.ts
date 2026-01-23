@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(req: Request) {
@@ -36,14 +35,6 @@ export async function POST(req: Request) {
       include: { role: true },
     })
 
-    const secret = process.env.JWT_SECRET
-    if (!secret) throw new Error('JWT_SECRET not configured')
-
-    const payload = { sub: updated.id, role: updated.role?.name ?? 'Member' }
-    const token = jwt.sign(payload, secret, { expiresIn: '7d' })
-
-    const cookie = `session_token=${token}; HttpOnly; Path=/; Max-Age=${60 * 60 * 24 * 7}; SameSite=Lax${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`
-
     const safeMember = {
       id: updated.id,
       fullName: updated.fullName,
@@ -53,7 +44,8 @@ export async function POST(req: Request) {
       createdAt: updated.createdAt,
     }
 
-    return NextResponse.json({ member: safeMember }, { status: 200, headers: { 'Set-Cookie': cookie } })
+    // Return success without setting session cookie - user must log in after registration
+    return NextResponse.json({ member: safeMember }, { status: 200 })
   } catch (err: any) {
     return NextResponse.json({ error: err?.message ?? 'Server error' }, { status: 500 })
   }

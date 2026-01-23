@@ -10,6 +10,7 @@ import { useAuth } from "@/components/auth-provider"
 import { Sparkles, Lock, User, ArrowLeft } from "lucide-react"
 
 function RegisterForm({ onSuccess }: { onSuccess: (role: string | null) => void }) {
+  const router = useRouter()
   const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
@@ -50,8 +51,8 @@ function RegisterForm({ onSuccess }: { onSuccess: (role: string | null) => void 
       const json = await res.json()
       setLoading(false)
       if (!res.ok) { setError(json.error || 'Registration failed'); return }
-      const memberRole = json?.member?.role ?? null
-      onSuccess(memberRole)
+      // Redirect to login page after successful registration
+      router.push('/login')
     } catch (err: any) {
       setLoading(false)
       setError(err?.message ?? 'Network error')
@@ -112,12 +113,22 @@ export default function LoginPage() {
       return
     }
 
-    const memberRole = (res as any)?.member?.role
-    // Treat null role as 'Member' - new members without assigned role should go to member dashboard
-    if (memberRole === 'Member' || memberRole === null || memberRole === undefined) {
+    const member = (res as any)?.member
+    if (!member) {
+      setError('Login response invalid')
+      return
+    }
+
+    const memberRole = typeof member.role === 'object' ? member.role?.name : member.role
+    
+    // Explicitly check role - never default
+    if (memberRole === 'Leader' || memberRole === 'Admin') {
+      router.push('/dashboard')
+    } else if (memberRole === 'Member') {
       router.push('/dashboard/member')
     } else {
-      router.push('/dashboard')
+      // Safety net - unknown role, redirect to member dashboard
+      router.push('/dashboard/member')
     }
   }
 
@@ -254,10 +265,7 @@ export default function LoginPage() {
               </div>
             </form>
           ) : (
-            <RegisterForm onSuccess={(memberRole) => {
-              if (memberRole === 'Member') router.push('/dashboard/member')
-              else router.push('/dashboard')
-            }} />
+            <RegisterForm onSuccess={() => {}} />
           )}
         </div>
 

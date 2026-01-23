@@ -29,7 +29,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const res = await fetch('/api/auth/me', { credentials: 'same-origin' })
       const json = await res.json()
-      setUser(json.user ?? null)
+      // Only set user if we got valid response with user and role
+      if (json.user && json.user.role) {
+        setUser(json.user)
+      } else {
+        setUser(null)
+      }
     } catch (e) {
       setUser(null)
     } finally {

@@ -33,7 +33,8 @@ export async function POST(req: Request) {
     const secret = process.env.JWT_SECRET
     if (!secret) throw new Error('JWT_SECRET not configured')
 
-    const payload = { sub: member.id, role: member.role?.name ?? 'Member' }
+    const roleName = member.role?.name ?? 'Member'
+    const payload = { sub: member.id, role: roleName }
     const token = jwt.sign(payload, secret, { expiresIn: '7d' })
 
     // Set HttpOnly cookie as the source of truth for auth
@@ -44,7 +45,7 @@ export async function POST(req: Request) {
       fullName: member.fullName,
       email: member.email,
       phone: member.phone,
-      role: member.role?.name ?? null,
+      role: roleName,
       createdAt: member.createdAt,
     }
 
