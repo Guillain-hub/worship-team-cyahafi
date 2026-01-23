@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
+import { useSidebar } from '@/components/ui/sidebar'
 import { 
   Plus, Pencil, Search, Trash2, 
   Wallet, Loader2, ChevronDown, ChevronRight, MinusCircle,
@@ -19,6 +20,7 @@ import {
 export default function ContributionsLandingPage() {
   const { toast } = useToast()
   const router = useRouter()
+  const { setOpen } = useSidebar()
 
   // Passkey gating - always require entry when visiting this page
   const [unlocked, setUnlocked] = useState<boolean>(false)
@@ -43,6 +45,13 @@ export default function ContributionsLandingPage() {
   const [customType, setCustomType] = useState('')
   const [expenseForm, setExpenseForm] = useState({ id: '', reason: '', amount: 0, date: '' })
   const [expenseEditing, setExpenseEditing] = useState(false)
+
+  // Close sidebar when passkey is locked
+  useEffect(() => {
+    if (!unlocked) {
+      setOpen(false)
+    }
+  }, [unlocked, setOpen])
 
   const localDateString = (d?: any) => {
     if (!d) return ''
@@ -251,7 +260,8 @@ export default function ContributionsLandingPage() {
           onEscapeKeyDown={(e) => e.preventDefault()}
           className="sm:max-w-[420px] p-0 border-none bg-transparent shadow-none"
         >
-          <div className="relative w-full bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8 shadow-xl">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" />
+          <div className="relative w-full bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8 shadow-xl z-50">
             <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-white">Enter passkey</h3>
             <p className="text-sm text-white/80 mb-6 sm:mb-8">This section is protected. Enter the passkey to continue.</p>
             
