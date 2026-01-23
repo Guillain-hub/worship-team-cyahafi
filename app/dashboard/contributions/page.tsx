@@ -272,20 +272,19 @@ export default function ContributionsLandingPage() {
                   <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 text-white">Enter passkey to access Contributions</h3>
                   <p className="text-xs sm:text-sm text-white/80 mb-6 sm:mb-8">This section is protected. Enter the passkey to continue.</p>
                   <div className="space-y-4 sm:space-y-5">
-                    <input 
-                      ref={passkeyInputRef}
-                      type="password" 
-                      value={passkey} 
-                      onChange={(e) => setPasskey(e.target.value)} 
-                      onKeyDown={(e) => e.key === 'Enter' && verifyPasskey()}
-                      placeholder="Enter Passkey" 
-                      inputMode="text"
-                      style={{ 
-                        WebkitAppearance: 'none',
-                        appearance: 'none'
-                      }}
-                      className="relative z-30 touch-manipulation select-text w-full px-4 sm:px-5 py-3 sm:py-4 text-base sm:text-lg bg-white/10 border-2 border-white/20 hover:border-white/40 focus:border-orange-400 text-white placeholder:text-white/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400/30 transition-all" 
-                    />
+                    <div className="space-y-1.5 sm:space-y-2">
+                      <label className="text-[9px] sm:text-[10px] font-bold text-white/70 uppercase tracking-widest ml-1">Passkey</label>
+                      <Input 
+                        ref={passkeyInputRef}
+                        type="password" 
+                        value={passkey} 
+                        onChange={(e) => setPasskey(e.target.value)} 
+                        onKeyDown={(e) => e.key === 'Enter' && verifyPasskey()}
+                        placeholder="••••••••" 
+                        inputMode="text"
+                        className="h-11 sm:h-14 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-2xl focus-visible:ring-orange-400/50 focus-visible:border-orange-400/50 transition-all shadow-inner text-sm"
+                      />
+                    </div>
                     <div className="flex justify-end gap-2 sm:gap-3">
                       <Button 
                         variant="outline" 
