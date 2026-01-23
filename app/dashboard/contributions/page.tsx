@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
@@ -24,6 +24,7 @@ export default function ContributionsLandingPage() {
   const [unlocked, setUnlocked] = useState<boolean>(false)
   const [passkey, setPasskey] = useState('')
   const [verifying, setVerifying] = useState(false)
+  const passkeyInputRef = useRef<HTMLInputElement>(null)
 
   const [loading, setLoading] = useState(true)
   const [events, setEvents] = useState<any[]>([])
@@ -65,6 +66,13 @@ export default function ContributionsLandingPage() {
   // only load when unlocked
   useEffect(() => {
     if (unlocked) load()
+  }, [unlocked])
+
+  // Mobile-safe delayed focus for passkey input
+  useEffect(() => {
+    if (!unlocked) {
+      setTimeout(() => passkeyInputRef.current?.focus(), 200)
+    }
   }, [unlocked])
 
   const verifyPasskey = async () => {
@@ -243,46 +251,44 @@ export default function ContributionsLandingPage() {
 
       {/* PASSKEY DIALOG --- shown when not unlocked */}
       {!unlocked && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4" style={{ touchAction: 'manipulation' }}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4">
           <div 
-            className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-transform duration-[10000ms] scale-110 hover:scale-100"
+            className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center bg-no-repeat transition-transform duration-[10000ms] scale-110 hover:scale-100"
             style={{ backgroundImage: `url('https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?q=80&w=2070')` }}
           />
-          <div className="absolute inset-0 z-10 bg-black/30 backdrop-blur-[2px]" />
+          <div className="absolute inset-0 z-10 pointer-events-none bg-black/30 backdrop-blur-[2px]" />
 
-              <div className="relative z-20 w-full max-w-sm px-4 sm:px-6 max-h-[90vh] overflow-y-auto" style={{ touchAction: 'manipulation' }}>
-                <div className="w-full bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 sm:p-6 md:p-8 shadow-xl" style={{ touchAction: 'manipulation' }}>
+              <div className="relative z-20 w-full max-w-sm px-4 sm:px-6 max-h-[90vh] overflow-y-auto">
+                <div className="w-full bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 sm:p-6 md:p-8 shadow-xl">
                   <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 text-white">Enter passkey to access Contributions</h3>
                   <p className="text-xs sm:text-sm text-white/80 mb-6 sm:mb-8">This section is protected. Enter the passkey to continue.</p>
                   <div className="space-y-4 sm:space-y-5">
                     <input 
+                      ref={passkeyInputRef}
                       type="password" 
                       value={passkey} 
                       onChange={(e) => setPasskey(e.target.value)} 
                       onKeyPress={(e) => e.key === 'Enter' && verifyPasskey()}
                       placeholder="Enter Passkey" 
+                      inputMode="text"
                       style={{ 
-                        touchAction: 'manipulation',
                         WebkitAppearance: 'none',
                         appearance: 'none'
                       }}
-                      className="w-full px-4 sm:px-5 py-3 sm:py-4 text-base sm:text-lg bg-white/10 border-2 border-white/20 hover:border-white/40 focus:border-orange-400 text-white placeholder:text-white/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400/30 transition-all" 
-                      autoFocus
+                      className="relative z-30 w-full px-4 sm:px-5 py-3 sm:py-4 text-base sm:text-lg bg-white/10 border-2 border-white/20 hover:border-white/40 focus:border-orange-400 text-white placeholder:text-white/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400/30 transition-all" 
                     />
                     <div className="flex justify-end gap-2 sm:gap-3">
                       <Button 
                         variant="outline" 
                         onClick={() => { setPasskey('') }} 
-                        className="text-xs sm:text-sm h-10 sm:h-12 px-4 sm:px-6 pointer-events-auto"
-                        style={{ touchAction: 'manipulation' }}
+                        className="text-xs sm:text-sm h-10 sm:h-12 px-4 sm:px-6"
                       >
                         Cancel
                       </Button>
                       <Button 
                         onClick={verifyPasskey} 
                         disabled={verifying} 
-                        className="text-xs sm:text-sm h-10 sm:h-12 px-4 sm:px-6 pointer-events-auto"
-                        style={{ touchAction: 'manipulation' }}
+                        className="text-xs sm:text-sm h-10 sm:h-12 px-4 sm:px-6"
                       >
                         {verifying ? 'Checking...' : 'Enter'}
                       </Button>
