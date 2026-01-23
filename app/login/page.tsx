@@ -17,6 +17,7 @@ function RegisterForm({ onSuccess }: { onSuccess: (role: string | null) => void 
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
   const [fullNameError, setFullNameError] = useState<string | null>(null)
   const [phoneError, setPhoneError] = useState<string | null>(null)
   const [passwordError, setPasswordError] = useState<string | null>(null)
@@ -51,12 +52,35 @@ function RegisterForm({ onSuccess }: { onSuccess: (role: string | null) => void 
       const json = await res.json()
       setLoading(false)
       if (!res.ok) { setError(json.error || 'Registration failed'); return }
-      // Redirect to login page after successful registration
-      router.push('/login')
+      // Show success message and redirect after 2.5 seconds
+      setSuccess(true)
+      setTimeout(() => {
+        router.push('/login')
+      }, 2500)
     } catch (err: any) {
       setLoading(false)
       setError(err?.message ?? 'Network error')
     }
+  }
+
+  // Show success message
+  if (success) {
+    return (
+      <div className="space-y-4 text-center">
+        <div className="p-4 sm:p-6 bg-emerald-500/10 border border-emerald-500/50 rounded-2xl">
+          <div className="flex justify-center mb-3">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-500/20 rounded-full flex items-center justify-center">
+              <svg className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </div>
+          <h3 className="text-lg sm:text-xl font-black text-emerald-300 uppercase tracking-widest mb-2">Account Created Successfully!</h3>
+          <p className="text-xs sm:text-sm text-emerald-200/80">Your account is ready. You will be redirected to login page momentarily.</p>
+        </div>
+        <p className="text-[10px] sm:text-[11px] text-white/40 animate-pulse">Redirecting in 2 seconds...</p>
+      </div>
+    )
   }
 
   return (
