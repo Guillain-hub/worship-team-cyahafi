@@ -262,7 +262,7 @@ export default function MembersPage() {
                             variant="ghost" 
                             size="icon" 
                             className={`h-7 w-7 sm:h-8 sm:w-8 ${roleName === 'Leader' ? 'text-orange-500' : 'text-emerald-500'}`} 
-                            onClick={() => toggleRole(m)}
+                            onClick={(e) => { e.stopPropagation(); toggleRole(m) }}
                             title={roleName === 'Leader' ? "Demote to Member" : "Promote to Leader"}
                             disabled={!!processing[m.id] || roleName === 'Admin'}
                           >
@@ -271,12 +271,12 @@ export default function MembersPage() {
                         )}
 
                         {user?.role === 'Admin' && (
-                          <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 text-blue-500" onClick={() => openEditDialog(m)} disabled={roleName === 'Admin'}>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 text-blue-500" onClick={(e) => { e.stopPropagation(); openEditDialog(m) }} disabled={roleName === 'Admin'}>
                             <Pencil className="h-3 w-3 sm:h-4 sm:w-4" />
                           </Button>
                         )}
                         {user?.role === 'Admin' && (
-                          <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 text-destructive" onClick={() => handleDelete(m.id)} disabled={!!processing[m.id] || roleName === 'Admin'}>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 text-destructive" onClick={(e) => { e.stopPropagation(); handleDelete(m.id) }} disabled={!!processing[m.id] || roleName === 'Admin'}>
                             {processing[m.id] ? <Loader2 className="animate-spin h-3 w-3 sm:h-4 sm:w-4" /> : <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />}
                           </Button>
                         )}
