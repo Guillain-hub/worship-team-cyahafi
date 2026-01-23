@@ -68,10 +68,16 @@ export default function ContributionsLandingPage() {
     if (unlocked) load()
   }, [unlocked])
 
-  // Mobile-safe delayed focus for passkey input
+  // Lock scroll while dialog is open
   useEffect(() => {
     if (!unlocked) {
-      setTimeout(() => passkeyInputRef.current?.focus(), 200)
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+
+    return () => {
+      document.body.style.overflow = ''
     }
   }, [unlocked])
 
@@ -251,7 +257,10 @@ export default function ContributionsLandingPage() {
 
       {/* PASSKEY DIALOG --- shown when not unlocked */}
       {!unlocked && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4">
+        <div 
+          className="fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 touch-manipulation"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div 
             className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center bg-no-repeat transition-transform duration-[10000ms] scale-110 hover:scale-100"
             style={{ backgroundImage: `url('https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?q=80&w=2070')` }}
@@ -268,14 +277,14 @@ export default function ContributionsLandingPage() {
                       type="password" 
                       value={passkey} 
                       onChange={(e) => setPasskey(e.target.value)} 
-                      onKeyPress={(e) => e.key === 'Enter' && verifyPasskey()}
+                      onKeyDown={(e) => e.key === 'Enter' && verifyPasskey()}
                       placeholder="Enter Passkey" 
                       inputMode="text"
                       style={{ 
                         WebkitAppearance: 'none',
                         appearance: 'none'
                       }}
-                      className="relative z-30 w-full px-4 sm:px-5 py-3 sm:py-4 text-base sm:text-lg bg-white/10 border-2 border-white/20 hover:border-white/40 focus:border-orange-400 text-white placeholder:text-white/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400/30 transition-all" 
+                      className="relative z-30 touch-manipulation select-text w-full px-4 sm:px-5 py-3 sm:py-4 text-base sm:text-lg bg-white/10 border-2 border-white/20 hover:border-white/40 focus:border-orange-400 text-white placeholder:text-white/40 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400/30 transition-all" 
                     />
                     <div className="flex justify-end gap-2 sm:gap-3">
                       <Button 
