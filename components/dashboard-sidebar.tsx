@@ -103,8 +103,8 @@ export function DashboardSidebar() {
             <Music2 className="h-5 w-5" />
           </div>
           <div className="flex flex-col gap-0.5 leading-none min-w-0">
-            <span className="font-semibold text-sm truncate">ADEPR Cyahafi</span>
-            <span className="text-xs text-muted-foreground truncate">Worship Management</span>
+            <span className="font-semibold text-sm truncate">Worship Team</span>
+            <span className="text-xs text-muted-foreground truncate">adepr cyahafi</span>
           </div>
         </div>
       </SidebarHeader>

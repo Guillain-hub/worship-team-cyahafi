@@ -380,52 +380,110 @@ export default function ContributionsLandingPage() {
 
       {/* COLLECTIONS TABLE (Filtered to exclude the hidden internal usage event) */}
       <Card className="rounded-xl border-border overflow-hidden shadow-sm">
-        <div className="p-3 flex justify-between items-center border-b bg-muted/10">
-          <div className="relative max-w-xs">
+        <div className="p-3 sm:p-4 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-between items-start sm:items-center border-b bg-muted/10">
+          <div className="relative w-full sm:max-w-xs">
             <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
             <Input 
               placeholder="Search collections..." 
-              className="pl-8 h-9 text-sm rounded-lg border-none bg-background shadow-none" 
+              className="pl-8 h-9 text-sm rounded-lg border-none bg-background shadow-none w-full" 
               value={searchTerm} 
               onChange={(e) => setSearchTerm(e.target.value)} 
             />
           </div>
-          <Button size="sm" onClick={() => { setEditing(false); setFormOpen(true); }} className="rounded-lg font-bold">
+          <Button size="sm" onClick={() => { setEditing(false); setFormOpen(true); }} className="rounded-lg font-bold w-full sm:w-auto">
             <Plus className="mr-1 h-4 w-4" /> New Event
           </Button>
         </div>
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="pl-6 text-[10px] font-bold uppercase">Source Event</TableHead>
-              <TableHead className="text-[10px] font-bold uppercase">Date</TableHead>
-              <TableHead className="text-[10px] font-bold uppercase">Category</TableHead>
-              <TableHead className="text-[10px] font-bold uppercase">Total Inflow</TableHead>
-              <TableHead className="text-right pr-6 text-[10px] font-bold uppercase">Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {events
-              .filter(ev => ev.name !== '_internal_usage') // DON'T SHOW THE HIDDEN SYSTEM EVENT HERE
-                .map((ev) => (
-                <TableRow key={ev.id} className="cursor-pointer group h-12" onClick={() => router.push(`/dashboard/contributions/${ev.id}`)}>
-                  <TableCell className="pl-6 font-bold text-sm group-hover:text-primary transition-colors">{ev.name}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{ev.date ? new Date(ev.date).toLocaleDateString() : '—'}</TableCell>
-                  <TableCell><Badge variant="outline" className="text-[9px] font-bold">{ev.type}</Badge></TableCell>
-                  <TableCell className="font-mono text-xs font-bold text-emerald-600">
-                    <ArrowUpRight className="inline h-3 w-3 mr-1" />{ (ev.actualTotal || 0).toLocaleString() }
-                  </TableCell>
-                  <TableCell className="text-right pr-6">
-                     <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setEditing(true); setCurrentEvent(ev); setFormOpen(true); }}><Pencil className="h-3.5 w-3.5" /></Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => deleteEvent(e, ev.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                     </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
+        {/* Desktop Table View */}
+        <div className="hidden sm:block overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="pl-6 text-[10px] font-bold uppercase">Source Event</TableHead>
+                <TableHead className="text-[10px] font-bold uppercase">Date</TableHead>
+                <TableHead className="text-[10px] font-bold uppercase">Category</TableHead>
+                <TableHead className="text-[10px] font-bold uppercase">Total Inflow</TableHead>
+                <TableHead className="text-right pr-6 text-[10px] font-bold uppercase">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {events
+                .filter(ev => ev.name !== '_internal_usage')
+                  .map((ev) => (
+                  <TableRow key={ev.id} className="cursor-pointer group h-12" onClick={() => router.push(`/dashboard/contributions/${ev.id}`)}>
+                    <TableCell className="pl-6 font-bold text-sm group-hover:text-primary transition-colors">{ev.name}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{ev.date ? new Date(ev.date).toLocaleDateString() : '—'}</TableCell>
+                    <TableCell><Badge variant="outline" className="text-[9px] font-bold">{ev.type}</Badge></TableCell>
+                    <TableCell className="font-mono text-xs font-bold text-emerald-600">
+                      <ArrowUpRight className="inline h-3 w-3 mr-1" />{ (ev.actualTotal || 0).toLocaleString() }
+                    </TableCell>
+                    <TableCell className="text-right pr-6">
+                       <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setEditing(true); setCurrentEvent(ev); setFormOpen(true); }}><Pencil className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => deleteEvent(e, ev.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                       </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="sm:hidden p-3 space-y-2">
+          {events.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground text-sm">No events found</div>
+          ) : events
+            .filter(ev => ev.name !== '_internal_usage')
+            .map((ev) => (
+            <div 
+              key={ev.id}
+              onClick={() => router.push(`/dashboard/contributions/${ev.id}`)}
+              className="bg-muted/30 rounded-lg p-3 space-y-2 border border-border/50 hover:bg-muted/50 transition-all cursor-pointer active:scale-95"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-sm truncate text-primary">{ev.name}</h3>
+                  <p className="text-[11px] text-muted-foreground">
+                    {ev.date ? new Date(ev.date).toLocaleDateString() : 'No date'}
+                  </p>
+                </div>
+                <Badge variant="outline" className="text-[8px] font-bold whitespace-nowrap flex-shrink-0">
+                  {ev.type}
+                </Badge>
+              </div>
+
+              <div className="flex items-center justify-between pt-1 border-t border-border/30">
+                <div className="flex items-center gap-1">
+                  <ArrowUpRight className="h-3.5 w-3.5 text-emerald-600" />
+                  <span className="font-mono font-bold text-sm text-emerald-600">
+                    {(ev.actualTotal || 0).toLocaleString()}
+                  </span>
+                  <span className="text-[9px] text-muted-foreground">RWF</span>
+                </div>
+                <div className="flex gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 px-2 text-xs"
+                    onClick={(e) => { e.stopPropagation(); setEditing(true); setCurrentEvent(ev); setFormOpen(true); }}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="h-8 px-2 text-xs text-destructive"
+                    onClick={(e) => deleteEvent(e, ev.id)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </Card>
 
       {/* DIALOG: NEW EVENT */}
