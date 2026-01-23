@@ -68,18 +68,7 @@ export default function ContributionsLandingPage() {
     if (unlocked) load()
   }, [unlocked])
 
-  // Lock scroll while dialog is open
-  useEffect(() => {
-    if (!unlocked) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
 
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [unlocked])
 
   const verifyPasskey = async () => {
     setVerifying(true)
@@ -255,58 +244,53 @@ export default function ContributionsLandingPage() {
   return (
     <div className="p-2 sm:p-4 space-y-3 sm:space-y-4 max-w-[1200px] mx-auto">
 
-      {/* PASSKEY DIALOG --- shown when not unlocked */}
-      {!unlocked && (
-        <div 
-          className="fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 touch-manipulation"
-          onClick={(e) => e.stopPropagation()}
+      {/* PASSKEY DIALOG --- Use Dialog component for proper mobile support */}
+      <Dialog open={!unlocked} onOpenChange={() => {}}>
+        <DialogContent 
+          onPointerDownOutside={(e) => e.preventDefault()} 
+          onEscapeKeyDown={(e) => e.preventDefault()}
+          className="sm:max-w-[420px] p-0 border-none bg-transparent shadow-none"
         >
-          <div 
-            className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center bg-no-repeat transition-transform duration-[10000ms] scale-110 hover:scale-100"
-            style={{ backgroundImage: `url('https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?q=80&w=2070')` }}
-          />
-          <div className="absolute inset-0 z-10 pointer-events-none bg-black/30 backdrop-blur-[2px]" />
-
-              <div className="relative z-20 w-full max-w-sm px-4 sm:px-6 max-h-[90vh] overflow-y-auto">
-                <div className="w-full bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 sm:p-6 md:p-8 shadow-xl">
-                  <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3 text-white">Enter passkey to access Contributions</h3>
-                  <p className="text-xs sm:text-sm text-white/80 mb-6 sm:mb-8">This section is protected. Enter the passkey to continue.</p>
-                  <div className="space-y-4 sm:space-y-5">
-                    <div className="space-y-1.5 sm:space-y-2">
-                      <label className="text-[9px] sm:text-[10px] font-bold text-white/70 uppercase tracking-widest ml-1">Passkey</label>
-                      <Input 
-                        ref={passkeyInputRef}
-                        type="password" 
-                        value={passkey} 
-                        onChange={(e) => setPasskey(e.target.value)} 
-                        onKeyDown={(e) => e.key === 'Enter' && verifyPasskey()}
-                        placeholder="••••••••" 
-                        inputMode="text"
-                        className="h-11 sm:h-14 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-2xl focus-visible:ring-orange-400/50 focus-visible:border-orange-400/50 transition-all shadow-inner text-sm"
-                      />
-                    </div>
-                    <div className="flex justify-end gap-2 sm:gap-3">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => { setPasskey('') }} 
-                        className="text-xs sm:text-sm h-10 sm:h-12 px-4 sm:px-6"
-                      >
-                        Cancel
-                      </Button>
-                      <Button 
-                        onClick={verifyPasskey} 
-                        disabled={verifying} 
-                        className="text-xs sm:text-sm h-10 sm:h-12 px-4 sm:px-6"
-                      >
-                        {verifying ? 'Checking...' : 'Enter'}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-            <p className="text-white/20 text-[8px] sm:text-[9px] font-black uppercase tracking-[0.8em] mt-4 sm:mt-6 text-center">ADEPR CYAHAFI • 2026</p>
+          <div className="relative w-full bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8 shadow-xl">
+            <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-white">Enter passkey</h3>
+            <p className="text-sm text-white/80 mb-6 sm:mb-8">This section is protected. Enter the passkey to continue.</p>
+            
+            <div className="space-y-4 sm:space-y-5">
+              <div className="space-y-1.5 sm:space-y-2">
+                <label className="text-[9px] sm:text-[10px] font-bold text-white/70 uppercase tracking-widest ml-1">Passkey</label>
+                <Input 
+                  ref={passkeyInputRef}
+                  type="password" 
+                  value={passkey} 
+                  onChange={(e) => setPasskey(e.target.value)} 
+                  onKeyDown={(e) => e.key === 'Enter' && verifyPasskey()}
+                  placeholder="••••••••" 
+                  autoFocus
+                  className="h-11 sm:h-14 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-2xl focus-visible:ring-orange-400/50 focus-visible:border-orange-400/50 transition-all shadow-inner text-sm"
+                />
+              </div>
+              
+              <div className="flex gap-2 sm:gap-3 pt-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setPasskey('')} 
+                  className="flex-1 h-10 sm:h-12 text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={verifyPasskey} 
+                  disabled={verifying} 
+                  className="flex-1 h-10 sm:h-12 text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl"
+                >
+                  {verifying ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  {verifying ? 'Checking...' : 'Enter'}
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
       
       {/* HEADER SECTION: BALANCE CARD */}
       <div className="bg-card rounded-xl sm:rounded-2xl border border-border shadow-sm overflow-hidden">
