@@ -4,6 +4,7 @@ import { useAuth } from "@/components/auth-provider"
 import { usePathname, useRouter } from "next/navigation"
 import { LayoutDashboard, Users, Calendar, HandCoins, Settings, Music2, FileDown, LogOut, Palette } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useSidebar } from "@/components/ui/sidebar"
 
 import {
   Sidebar,
@@ -61,6 +62,7 @@ export function DashboardSidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const { user, logout } = useAuth()
+  const { setOpen } = useSidebar()
 
   const userRole = typeof user?.role === 'object' ? user.role?.name : user?.role
 
@@ -89,6 +91,10 @@ export function DashboardSidebar() {
     ? [...items.slice(0, 5), ...adminItems, items[5]]
     : items
 
+  const handleNavigate = () => {
+    setOpen(false)
+  }
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b px-4 py-4">
@@ -112,7 +118,7 @@ export function DashboardSidebar() {
                 tooltip={item.title}
                 className="hover:bg-accent hover:text-accent-foreground data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
               >
-                <Link href={item.url}>
+                <Link href={item.url} onClick={handleNavigate}>
                   <item.icon />
                   <span>{item.title}</span>
                 </Link>
