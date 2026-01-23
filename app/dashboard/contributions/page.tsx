@@ -250,14 +250,22 @@ export default function ContributionsLandingPage() {
           />
           <div className="absolute inset-0 z-10 bg-black/30 backdrop-blur-[2px]" />
 
-              <div className="relative z-20 w-full max-w-sm px-4 sm:px-6">
+              <div className="relative z-20 w-full max-w-sm px-4 sm:px-6 max-h-[90vh] overflow-y-auto">
                 <div className="w-full bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-4 sm:p-6 md:p-8 shadow-xl">
                   <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2 text-white">Enter passkey to access Contributions</h3>
-                  <p className="text-xs sm:text-sm text-white/80 mb-3 sm:mb-4">This section is protected. Enter the passkey to continue.</p>
-                  <Input type="password" value={passkey} onChange={(e) => setPasskey(e.target.value)} placeholder="Passkey" className="mb-3 sm:mb-4 bg-white/5 text-white/90 text-sm" />
+                  <p className="text-xs sm:text-sm text-white/80 mb-4 sm:mb-6">This section is protected. Enter the passkey to continue.</p>
+                  <Input 
+                    type="password" 
+                    value={passkey} 
+                    onChange={(e) => setPasskey(e.target.value)} 
+                    onKeyPress={(e) => e.key === 'Enter' && verifyPasskey()}
+                    placeholder="Passkey" 
+                    className="mb-4 sm:mb-6 bg-white/5 text-white/90 text-sm h-10 sm:h-12 rounded-lg focus-visible:ring-2 focus-visible:ring-orange-400/50" 
+                    autoFocus
+                  />
                   <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => { setPasskey('') }} className="text-xs sm:text-sm">Cancel</Button>
-                    <Button onClick={verifyPasskey} disabled={verifying} className="text-xs sm:text-sm">{verifying ? 'Checking...' : 'Enter'}</Button>
+                    <Button variant="outline" onClick={() => { setPasskey('') }} className="text-xs sm:text-sm h-9 sm:h-10">Cancel</Button>
+                    <Button onClick={verifyPasskey} disabled={verifying} className="text-xs sm:text-sm h-9 sm:h-10">{verifying ? 'Checking...' : 'Enter'}</Button>
                   </div>
                 </div>
             <p className="text-white/20 text-[8px] sm:text-[9px] font-black uppercase tracking-[0.8em] mt-3 sm:mt-4 text-center">ADEPR CYAHAFI • 2026</p>
