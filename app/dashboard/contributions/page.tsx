@@ -518,13 +518,6 @@ export default function ContributionsLandingPage() {
                   </SelectContent>
                 </Select>
 
-                {currentEvent.type === 'MONTHLY' && (
-                  <div className="pt-3 border-t border-border/40 mt-3">
-                    <p className="text-[10px] font-bold text-emerald-600 mb-2 uppercase">Standard Amount</p>
-                    <span className="font-bold text-emerald-600">1,000 RWF</span>
-                  </div>
-                )}
-
                 {currentEvent.type === 'OTHER' && (
                   <div className="pt-2">
                     <label className="text-[11px] font-medium text-muted-foreground">Custom Type</label>

@@ -12,7 +12,7 @@ import { useAuth } from '@/components/auth-provider'
 
 // 1. Logic-only Rates (Not in DB)
 const MEMBER_RATES: Record<string, number> = {
-  'EMPLOYED': 2000,
+  'EMPLOYED': 1000,
   'SELF_EMPLOYED': 2000,
   'STUDENT': 500,
   'UNEMPLOYED': 0
