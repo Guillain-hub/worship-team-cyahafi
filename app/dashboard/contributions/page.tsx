@@ -90,7 +90,8 @@ export default function ContributionsLandingPage() {
       try { sessionStorage.setItem('contrib_unlocked', '1') } catch (e) {}
       setUnlocked(true)
     } catch (e) {
-      toast({ title: 'Network error', variant: 'destructive' })
+      console.error('Passkey verification error:', e)
+      toast({ title: 'Unable to verify', variant: 'destructive', description: 'Please try again' })
     } finally { setVerifying(false) }
   }
 
@@ -161,7 +162,7 @@ export default function ContributionsLandingPage() {
       load()
     } catch (e) {
       console.error('Record usage error:', e)
-      toast({ title: "Error recording usage", variant: "destructive", description: String(e) })
+      toast({ title: "Unable to save", variant: "destructive", description: "Please check your information and try again" })
     } finally { setIsProcessing(false) }
   }
 
@@ -183,7 +184,7 @@ export default function ContributionsLandingPage() {
       load()
     } catch (err) { 
       console.error('Delete error:', err)
-      toast({ title: 'Error deleting record', variant: 'destructive', description: String(err) }) 
+      toast({ title: 'Unable to delete', variant: 'destructive', description: 'Please try again' }) 
     }
   }
 
@@ -229,7 +230,7 @@ export default function ContributionsLandingPage() {
       load()
     } catch (e) {
       console.error('Save event error:', e)
-      toast({ title: 'Error saving event', variant: 'destructive' })
+      toast({ title: 'Unable to save event', variant: 'destructive', description: 'Please check your information and try again' })
     } finally { setIsProcessing(false) }
   }
 
@@ -246,7 +247,7 @@ export default function ContributionsLandingPage() {
       load()
     } catch (err) {
       console.error('Delete event error:', err)
-      toast({ title: 'Error deleting event', variant: 'destructive' })
+      toast({ title: 'Unable to delete event', variant: 'destructive', description: 'Please try again' })
     }
   }
 

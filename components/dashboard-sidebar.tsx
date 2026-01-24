@@ -107,6 +107,9 @@ export function DashboardSidebar() {
             <span className="text-xs text-muted-foreground truncate">adepr cyahafi</span>
           </div>
         </div>
+        <div className="sm:hidden text-[10px] font-bold text-white/70 text-center py-1">
+          worshipteam adepr cyahafi
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu className="px-2 py-4">
