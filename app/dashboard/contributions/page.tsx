@@ -520,21 +520,8 @@ export default function ContributionsLandingPage() {
 
                 {currentEvent.type === 'MONTHLY' && (
                   <div className="pt-3 border-t border-border/40 mt-3">
-                    <p className="text-[10px] font-bold text-muted-foreground mb-2 uppercase">Expected Contributions</p>
-                    <div className="space-y-1.5 text-xs">
-                      <div className="flex justify-between items-center bg-muted/50 px-2 py-1.5 rounded">
-                        <span className="text-muted-foreground">Student</span>
-                        <span className="font-bold text-emerald-600">500 RWF</span>
-                      </div>
-                      <div className="flex justify-between items-center bg-muted/50 px-2 py-1.5 rounded">
-                        <span className="text-muted-foreground">Employed</span>
-                        <span className="font-bold text-emerald-600">1,000 RWF</span>
-                      </div>
-                      <div className="flex justify-between items-center bg-muted/50 px-2 py-1.5 rounded">
-                        <span className="text-muted-foreground">Self-employed</span>
-                        <span className="font-bold text-emerald-600">2,000 RWF</span>
-                      </div>
-                    </div>
+                    <p className="text-[10px] font-bold text-emerald-600 mb-2 uppercase">Standard Amount</p>
+                    <span className="font-bold text-emerald-600">1,000 RWF</span>
                   </div>
                 )}
 
