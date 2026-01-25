@@ -132,14 +132,9 @@ export default function AttendancePage() {
                     setAttendanceLocked(true)
                     setIsEditing(false)
                     setLockMessage(`Activity date has passed - attendance locked`)
-                  } else if (eventAt && now < eventAt) {
-                    // before scheduled time on the day: locked until event time
-                    const timeStr = eventAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    setAttendanceLocked(true)
-                    setIsEditing(false)
-                    setLockMessage(`Activity locked until ${timeStr}`)
                   } else {
-                    // allowed (either we're on the day after event time but before midnight, or no specific time)
+                    // Allow saving on the activity day (before midnight of the next day)
+                    // The save will be allowed, and editing will be disabled at midnight automatically
                     setAttendanceLocked(false)
                     setIsEditing(true)
                     setLockMessage(null)
