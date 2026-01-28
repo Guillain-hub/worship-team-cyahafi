@@ -21,15 +21,21 @@ function computeAttendanceLock(activity: any) {
     return { locked: true, reason: 'Activity schedule is incomplete' }
   }
 
-  // Event start time
-  const eventAt = new Date(activity.date)
-  const [hh, mm] = String(activity.time).split(':').map(Number)
-  eventAt.setHours(hh, mm, 0, 0)
+  // Parse date as UTC to avoid timezone shifts
+  const eventDate = new Date(activity.date)
+  
+  // Extract date components (treat as calendar date, not time-zone-dependent)
+  const year = eventDate.getUTCFullYear()
+  const month = eventDate.getUTCMonth()
+  const day = eventDate.getUTCDate()
 
-  // Lock at next midnight
-  const lockAt = new Date(eventAt)
-  lockAt.setHours(0, 0, 0, 0)
-  lockAt.setDate(lockAt.getDate() + 1)
+  // Event start time (in UTC)
+  const eventAt = new Date(Date.UTC(year, month, day, 0, 0, 0, 0))
+  const [hh, mm] = String(activity.time).split(':').map(Number)
+  eventAt.setUTCHours(hh, mm, 0, 0)
+
+  // Lock at next midnight (UTC)
+  const lockAt = new Date(Date.UTC(year, month, day + 1, 0, 0, 0, 0))
 
   // ⛔ Before activity starts
   if (now < eventAt) {
@@ -83,11 +89,8 @@ export default function AttendancePage() {
         const mJson = await mRes.json()
         const attJson = await attRes.json()
 
-        // Normalize activity date to preserve calendar day (no timezone shift)
-        if (aJson.activity && aJson.activity.date) {
-          const dd = new Date(aJson.activity.date)
-          aJson.activity.date = new Date(dd.getFullYear(), dd.getMonth(), dd.getDate())
-        }
+        // Keep activity date as-is from server (will handle UTC in lock function)
+        // Don't normalize - it causes timezone shifts
 
         setActivity(aJson.activity)
         setMembers(mJson.members || [])
