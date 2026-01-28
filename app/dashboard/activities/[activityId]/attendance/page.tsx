@@ -13,6 +13,44 @@ import { useAuth } from "@/components/auth-provider"
 // Updated type to include Excused
 type AttendanceStatus = "Present" | "Absent" | "Excused"
 
+// 🔐 SINGLE SOURCE OF TRUTH FOR ATTENDANCE LOCKING
+function computeAttendanceLock(activity: any) {
+  const now = new Date()
+
+  if (!activity?.date || !activity?.time) {
+    return { locked: true, reason: 'Activity schedule is incomplete' }
+  }
+
+  // Event start time
+  const eventAt = new Date(activity.date)
+  const [hh, mm] = String(activity.time).split(':').map(Number)
+  eventAt.setHours(hh, mm, 0, 0)
+
+  // Lock at next midnight
+  const lockAt = new Date(eventAt)
+  lockAt.setHours(0, 0, 0, 0)
+  lockAt.setDate(lockAt.getDate() + 1)
+
+  // ⛔ Before activity starts
+  if (now < eventAt) {
+    return {
+      locked: true,
+      reason: `Attendance opens at ${eventAt.toLocaleTimeString()}`
+    }
+  }
+
+  // 🔒 After activity day
+  if (now >= lockAt) {
+    return {
+      locked: true,
+      reason: 'Attendance is locked. Activity date has passed.'
+    }
+  }
+
+  // ✅ Allowed
+  return { locked: false, reason: null }
+}
+
 export default function AttendancePage() {
   const { activityId } = useParams<{ activityId: string }>()
   const { user } = useAuth()
@@ -89,78 +127,16 @@ export default function AttendancePage() {
             map[m.id] = "Absent"
           }
           setHasSavedAttendance(false)
-          
-          // Only check time locks if user is authorized
-          if (isAuthorized) {
-            // determine if we should allow taking attendance now
-            try {
-              const now = new Date()
-              let eventDateOnly: Date | null = null
-              let eventAt: Date | null = null
-              if (aJson.activity) {
-                // activity.date was normalized above; treat as Date if present
-                eventDateOnly = aJson.activity.date ? (aJson.activity.date instanceof Date ? aJson.activity.date : new Date(aJson.activity.date)) : null
-                if (eventDateOnly) {
-                  // Set event date to midnight for comparison
-                  eventDateOnly.setHours(0, 0, 0, 0)
-                  
-                  // start-of-next-day lock (attendance locked starting at 00:00 of the day AFTER activity.date)
-                  const lockAt = new Date(eventDateOnly)
-                  lockAt.setDate(lockAt.getDate() + 1)
-                  lockAt.setHours(0, 0, 0, 0)
-
-                  console.log('Attendance lock check:', {
-                    now: now.toLocaleString(),
-                    eventDate: eventDateOnly.toLocaleDateString(),
-                    lockAt: lockAt.toLocaleString(),
-                    isLocked: now >= lockAt
-                  })
-
-                  // if a time is provided, compute eventAt (specific scheduled time)
-                  if (aJson.activity.time) {
-                    eventAt = new Date(eventDateOnly)
-                    const parts = String(aJson.activity.time).split(':')
-                    if (parts.length >= 2) {
-                      const hh = Number(parts[0]) || 0
-                      const mm = Number(parts[1]) || 0
-                      eventAt.setHours(hh, mm, 0, 0)
-                    }
-                  }
-
-                  // If current time is on/after the lock boundary, disallow (activity date passed)
-                  if (now >= lockAt) {
-                    setAttendanceLocked(true)
-                    setIsEditing(false)
-                    setLockMessage(`Activity date has passed - attendance locked`)
-                  } else {
-                    // Allow saving on the activity day (before midnight of the next day)
-                    // The save will be allowed, and editing will be disabled at midnight automatically
-                    setAttendanceLocked(false)
-                    setIsEditing(true)
-                    setLockMessage(null)
-                  }
-                } else {
-                  setAttendanceLocked(false)
-                  setIsEditing(true)
-                  setLockMessage(null)
-                }
-              } else {
-                setAttendanceLocked(false)
-                setIsEditing(true)
-                setLockMessage(null)
-              }
-            } catch (e) {
-              console.error('Lock logic error:', e)
-              setAttendanceLocked(false)
-              setIsEditing(true)
-            }
-          } else {
-            // User not authorized, lock attendance
-            setAttendanceLocked(true)
-            setIsEditing(false)
-          }
         }
         setAttendance(map)
+
+        // 🔐 Apply attendance lock logic on page load
+        if (isAuthorized && !savedFlag) {
+          const { locked, reason } = computeAttendanceLock(aJson.activity)
+          setAttendanceLocked(locked)
+          setLockMessage(reason)
+          setIsEditing(!locked)
+        }
       } catch (e) {
         console.error("Failed to load attendance page", e)
       }
@@ -220,12 +196,18 @@ export default function AttendancePage() {
     }
     if (!accessAllowed) return alert('You are not allowed to save attendance for this activity')
 
+    // 🔐 Enforce lock check before saving (MANDATORY - never trust client state)
+    const { locked, reason } = computeAttendanceLock(activity)
+    if (locked) {
+      alert(reason || 'Attendance is locked')
+      return
+    }
+
     const attendees = Object.entries(attendance).map(([memberId, status]) => ({
       memberId,
       status: status,
     }))
 
-    if (attendanceLocked) return alert(lockMessage || 'Attendance is locked until the scheduled time')
     setLoading(true)
     try {
       const res = await fetch(`/api/activities/${activityId}/attendance`, {
@@ -285,8 +267,7 @@ export default function AttendancePage() {
       {/* Attendance locked message */}
       {accessAllowed && attendanceLocked && (
         <div className="p-4 rounded-md bg-amber-50 border border-amber-200">
-          <p className="text-sm font-bold text-amber-700">🔒 Attendance is locked</p>
-          <p className="text-xs text-muted-foreground mt-1">{lockMessage || 'Attendance cannot be marked at this time.'}</p>
+          <p className="text-sm font-bold text-amber-700">🔒 {lockMessage}</p>
         </div>
       )}
 
