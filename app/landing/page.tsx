@@ -678,14 +678,14 @@ export default function LandingPage() {
 
       {/* Upcoming Events Section */}
       <section
-        className="relative w-full py-8 md:py-12 lg:py-20 px-4 md:px-8 lg:px-12 transition-colors duration-500 bg-[radial-gradient(ellipse_at_top,_#1a1228_0%,_#0a0612_70%)]"
+        className="relative w-full py-8 md:py-12 lg:py-20 px-3 sm:px-4 md:px-8 lg:px-12 transition-colors duration-500 bg-[radial-gradient(ellipse_at_top,_#1a1228_0%,_#0a0612_70%)]"
       >
         <div className="max-w-[1400px] mx-auto">
     {/* Header */}
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-10 gap-4">
+    <div className="flex flex-col gap-3 mb-6 sm:mb-8 md:mb-10">
       <div>
         <h2
-          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight mb-2 text-white"
+          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight mb-1 sm:mb-2 text-white"
         >
           Upcoming{' '}
           <span className="text-amber-300">
@@ -693,7 +693,7 @@ export default function LandingPage() {
           </span>
         </h2>
         <p
-          className="text-xs md:text-sm leading-relaxed max-w-md text-gray-400"
+          className="text-xs sm:text-sm leading-relaxed max-w-md text-gray-400"
         >
           Join us for worship, fellowship, and moments of spiritual growth
         </p>
@@ -701,21 +701,21 @@ export default function LandingPage() {
     </div>
 
     {/* Events Grid */}
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col gap-3 sm:gap-4 w-full">
       {landingContent.upcomingEvents &&
       landingContent.upcomingEvents.length > 0 ? (
         landingContent.upcomingEvents.map((event, idx) => (
           <div
             key={event.id}
             className={`group relative rounded-lg overflow-hidden border/50 backdrop-blur-lg
-            transition-all duration-700 hover:shadow-lg flex flex-col sm:flex-row items-start sm:items-center p-3 md:p-4 gap-3 md:gap-4
+            transition-all duration-700 hover:shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center p-3 sm:p-4 gap-3 sm:gap-4
             border-amber-500/20 bg-gray-900/40 hover:border-amber-400/40`}
             style={{
               animation: `slideUp 0.6s ease-out ${idx * 0.1}s both`,
             }}
           >
             {/* Image */}
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-lg overflow-hidden">
+            <div className="relative w-full sm:w-24 sm:h-24 h-40 sm:flex-shrink-0 rounded-lg overflow-hidden">
               {event.image ? (
                 <img
                   src={event.image}
@@ -728,7 +728,7 @@ export default function LandingPage() {
                   className="flex items-center justify-center w-full h-full bg-gradient-to-br from-amber-500/30 to-black/50"
                 >
                   <Calendar
-                    size={24}
+                    size={32}
                     className="text-amber-300/50"
                   />
                 </div>
@@ -739,7 +739,7 @@ export default function LandingPage() {
             <div className="flex-1 flex flex-col gap-2 w-full">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
                 <h3
-                  className="text-sm md:text-base font-semibold leading-snug text-white/90 group-hover:text-amber-50"
+                  className="text-sm sm:text-base font-semibold leading-snug text-white/90 group-hover:text-amber-50 line-clamp-2"
                 >
                   {event.title}
                 </h3>
@@ -752,15 +752,15 @@ export default function LandingPage() {
               </div>
 
               <div
-                className="flex flex-col sm:flex-row sm:gap-6 gap-1 text-xs text-amber-100/70"
+                className="flex flex-col sm:flex-row gap-2 sm:gap-6 text-xs text-amber-100/70"
               >
                 {/* Date */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0">
                   <Calendar
                     size={14}
                     className="flex-shrink-0 text-amber-400"
                   />
-                  <span>
+                  <span className="line-clamp-1">
                     {new Date(event.date).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
@@ -770,7 +770,7 @@ export default function LandingPage() {
                 </div>
 
                 {/* Location */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0">
                   <MapPin
                     size={14}
                     className="flex-shrink-0 text-amber-400"
@@ -783,9 +783,9 @@ export default function LandingPage() {
         ))
       ) : (
         /* Empty State */
-        <div className="col-span-full flex justify-center">
+        <div className="col-span-full flex justify-center py-12 sm:py-16 md:py-20 px-4">
           <div
-            className="py-20 px-8 rounded-2xl border-2 border-dashed text-center max-w-md border-amber-500/30 text-gray-400"
+            className="rounded-2xl border-2 border-dashed text-center max-w-md border-amber-500/30 text-gray-400"
           >
             <Calendar size={48} className="mx-auto mb-4 opacity-50" />
             <p className="text-sm font-medium">No events scheduled yet</p>
