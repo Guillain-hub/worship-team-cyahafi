@@ -843,19 +843,19 @@ export default function LandingPage() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 lg:gap-12 lg:gap-16">
               <div className="flex flex-col gap-3 md:gap-4">
                 <h4 className="text-white text-xs md:text-sm font-semibold mb-1 md:mb-2">Follow Us</h4>
-                <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer" className="text-xs md:text-sm text-purple-200/60 hover:text-red-500 transition-colors flex items-center gap-2">
+                <a href="https://www.youtube.com/@WorshipTeamADEPRCyahafi" target="_blank" rel="noopener noreferrer" className="text-xs md:text-sm text-purple-200/60 hover:text-red-500 transition-colors flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#FF0000">
                     <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"></path>
                   </svg>
                   YouTube
                 </a>
-                <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="text-xs md:text-sm text-purple-200/60 hover:text-pink-500 transition-colors flex items-center gap-2">
+                <a href="https://www.instagram.com/worshipteamadepr?igsh=Zjc4cDA5c3o5b2Zs" target="_blank" rel="noopener noreferrer" className="text-xs md:text-sm text-purple-200/60 hover:text-pink-500 transition-colors flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#E1306C">
                     <path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8A1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5a5 5 0 0 1-5 5a5 5 0 0 1-5-5a5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3z"></path>
                   </svg>
                   Instagram
                 </a>
-                <a href="https://www.tiktok.com" target="_blank" rel="noopener noreferrer" className="text-xs md:text-sm text-purple-200/60 hover:text-white transition-colors flex items-center gap-2">
+                <a href="https://vm.tiktok.com/ZS91edG1d2jWo-2LYu4/" target="_blank" rel="noopener noreferrer" className="text-xs md:text-sm text-purple-200/60 hover:text-white transition-colors flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#FFFFFF">
                     <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74a2.89 2.89 0 0 1 2.31-4.64a2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"></path>
                   </svg>
