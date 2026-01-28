@@ -14,28 +14,26 @@ import { useAuth } from "@/components/auth-provider"
 type AttendanceStatus = "Present" | "Absent" | "Excused"
 
 // 🔐 SINGLE SOURCE OF TRUTH FOR ATTENDANCE LOCKING
+// ✅ Local-time safe, predictable, production-ready
 function computeAttendanceLock(activity: any) {
-  const now = new Date()
+  const now = new Date() // local time
 
   if (!activity?.date || !activity?.time) {
     return { locked: true, reason: 'Activity schedule is incomplete' }
   }
 
-  // Parse date as UTC to avoid timezone shifts
+  // Parse activity date (local)
   const eventDate = new Date(activity.date)
-  
-  // Extract date components (treat as calendar date, not time-zone-dependent)
-  const year = eventDate.getUTCFullYear()
-  const month = eventDate.getUTCMonth()
-  const day = eventDate.getUTCDate()
 
-  // Event start time (in UTC)
-  const eventAt = new Date(Date.UTC(year, month, day, 0, 0, 0, 0))
+  // Event start time (LOCAL)
+  const eventAt = new Date(eventDate)
   const [hh, mm] = String(activity.time).split(':').map(Number)
-  eventAt.setUTCHours(hh, mm, 0, 0)
+  eventAt.setHours(hh, mm, 0, 0)
 
-  // Lock at next midnight (UTC)
-  const lockAt = new Date(Date.UTC(year, month, day + 1, 0, 0, 0, 0))
+  // Lock at next midnight (LOCAL)
+  const lockAt = new Date(eventDate)
+  lockAt.setHours(0, 0, 0, 0)
+  lockAt.setDate(lockAt.getDate() + 1)
 
   // ⛔ Before activity starts
   if (now < eventAt) {
