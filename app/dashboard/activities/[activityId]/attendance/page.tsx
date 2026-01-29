@@ -16,31 +16,33 @@ type AttendanceStatus = "Present" | "Absent" | "Excused"
 // 🔐 SINGLE SOURCE OF TRUTH FOR ATTENDANCE LOCKING
 // ✅ Local-time safe, predictable, production-ready
 function computeAttendanceLock(activity: any) {
-  const now = new Date() // local time
+  const now = new Date();
 
   if (!activity?.date || !activity?.time) {
-    return { locked: true, reason: 'Activity schedule is incomplete' }
+    return { locked: true, reason: 'Activity schedule is incomplete' };
   }
 
-  // Parse activity date (local)
-  const eventDate = new Date(activity.date)
+  // 1. Create the start time by combining date and time strings
+  // We parse the activity.date (YYYY-MM-DD) and manually apply hh:mm
+  const [hh, mm] = String(activity.time).split(':').map(Number);
+  const eventAt = new Date(activity.date);
+  eventAt.setHours(hh, mm, 0, 0);
 
-  // Event start time (LOCAL)
-  const eventAt = new Date(eventDate)
-  const [hh, mm] = String(activity.time).split(':').map(Number)
-  eventAt.setHours(hh, mm, 0, 0)
+  // 2. Create the lock time (Midnight of the following day)
+  const lockAt = new Date(activity.date);
+  lockAt.setHours(0, 0, 0, 0);
+  lockAt.setDate(lockAt.getDate() + 1);
 
-  // Lock at next midnight (LOCAL)
-  const lockAt = new Date(eventDate)
-  lockAt.setHours(0, 0, 0, 0)
-  lockAt.setDate(lockAt.getDate() + 1)
+  // DEBUG: Log these to your console to see exactly what the computer sees
+  console.log("Current Time:", now.toString());
+  console.log("Event Starts:", eventAt.toString());
 
   // ⛔ Before activity starts
   if (now < eventAt) {
     return {
       locked: true,
       reason: `Attendance opens at ${eventAt.toLocaleTimeString()}`
-    }
+    };
   }
 
   // 🔒 After activity day
@@ -48,11 +50,11 @@ function computeAttendanceLock(activity: any) {
     return {
       locked: true,
       reason: 'Attendance is locked. Activity date has passed.'
-    }
+    };
   }
 
   // ✅ Allowed
-  return { locked: false, reason: null }
+  return { locked: false, reason: null };
 }
 
 export default function AttendancePage() {
@@ -92,6 +94,7 @@ export default function AttendancePage() {
 
         setActivity(aJson.activity)
         setMembers(mJson.members || [])
+        setAssignedLeaderId(aJson.activity?.attendanceById || aJson.activity?.attendanceBy)
 
         // Check authorization: only Admin or the assigned leader can take attendance
         const assignedLeader = aJson.activity?.attendanceBy
