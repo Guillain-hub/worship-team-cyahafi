@@ -22,30 +22,30 @@ function computeAttendanceLock(activity: any) {
     return { locked: true, reason: 'Activity schedule is incomplete' };
   }
 
-  // 1. Create the start time by combining date and time strings
-  // We parse the activity.date (YYYY-MM-DD) and manually apply hh:mm
+  // ✅ FIX: Parse YYYY-MM-DD manually to avoid UTC shift
+  const [year, month, day] = activity.date.split('-').map(Number);
   const [hh, mm] = String(activity.time).split(':').map(Number);
-  const eventAt = new Date(activity.date);
-  eventAt.setHours(hh, mm, 0, 0);
 
-  // 2. Create the lock time (Midnight of the following day)
-  const lockAt = new Date(activity.date);
-  lockAt.setHours(0, 0, 0, 0);
-  lockAt.setDate(lockAt.getDate() + 1);
+  // Create start time in LOCAL timezone
+  const eventAt = new Date(year, month - 1, day, hh, mm, 0);
 
-  // DEBUG: Log these to your console to see exactly what the computer sees
-  console.log("Current Time:", now.toString());
-  console.log("Event Starts:", eventAt.toString());
+  // Create lock time (Midnight of the following day) in LOCAL timezone
+  const lockAt = new Date(year, month - 1, day + 1, 0, 0, 0);
+
+  // Debugging logs - Check your browser console!
+  console.log("Current Time (Local):", now.toString());
+  console.log("Opening At (Local):", eventAt.toString());
+  console.log("Locking At (Local):", lockAt.toString());
 
   // ⛔ Before activity starts
   if (now < eventAt) {
     return {
       locked: true,
-      reason: `Attendance opens at ${eventAt.toLocaleTimeString()}`
+      reason: `Attendance opens today at ${eventAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
     };
   }
 
-  // 🔒 After activity day
+  // 🔒 After activity day (Midnight next day)
   if (now >= lockAt) {
     return {
       locked: true,
