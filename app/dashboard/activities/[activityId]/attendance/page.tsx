@@ -146,7 +146,15 @@ export default function AttendancePage() {
     }
 
     if (role === 'Leader') {
-      setAccessAllowed(String(user.id) === String(assignedLeaderId))
+      // If `assignedLeaderId` is actually an ID, compare to user.id.
+      // If it's a name (fallback from older data), compare to user.fullName.
+      const assigned = String(assignedLeaderId)
+      const isIdLike = /^[0-9a-fA-F-]{8,}$/.test(assigned)
+      if (isIdLike) {
+        setAccessAllowed(String(user.id) === assigned)
+      } else {
+        setAccessAllowed(String(user.fullName) === assigned)
+      }
       return
     }
 
