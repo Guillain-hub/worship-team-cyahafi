@@ -13,48 +13,33 @@ import { useAuth } from "@/components/auth-provider"
 // Updated type to include Excused
 type AttendanceStatus = "Present" | "Absent" | "Excused"
 
-// 🔐 SINGLE SOURCE OF TRUTH FOR ATTENDANCE LOCKING
-// ✅ Local-time safe, predictable, production-ready
+// 🔐 ATTENDANCE LOCK — EXPIRATION ONLY
 function computeAttendanceLock(activity: any) {
-  const now = new Date();
+  const now = new Date()
 
-  if (!activity?.date || !activity?.time) {
-    return { locked: true, reason: 'Activity schedule is incomplete' };
+  if (!activity?.date) {
+    return { locked: true, reason: 'Activity date is missing' }
   }
 
-  // ✅ FIX: Parse YYYY-MM-DD manually to avoid UTC shift
-  const [year, month, day] = activity.date.split('-').map(Number);
-  const [hh, mm] = String(activity.time).split(':').map(Number);
+  // Parse YYYY-MM-DD safely (LOCAL time)
+  const [year, month, day] = activity.date.split('-').map(Number)
 
-  // Create start time in LOCAL timezone
-  const eventAt = new Date(year, month - 1, day, hh, mm, 0);
+  // Lock at midnight AFTER activity day
+  const lockAt = new Date(year, month - 1, day + 1, 0, 0, 0)
 
-  // Create lock time (Midnight of the following day) in LOCAL timezone
-  const lockAt = new Date(year, month - 1, day + 1, 0, 0, 0);
+  console.log("Now:", now.toString())
+  console.log("Lock At:", lockAt.toString())
 
-  // Debugging logs - Check your browser console!
-  console.log("Current Time (Local):", now.toString());
-  console.log("Opening At (Local):", eventAt.toString());
-  console.log("Locking At (Local):", lockAt.toString());
-
-  // ⛔ Before activity starts
-  if (now < eventAt) {
-    return {
-      locked: true,
-      reason: `Attendance opens today at ${eventAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-    };
-  }
-
-  // 🔒 After activity day (Midnight next day)
+  // 🔒 ONLY expiration check
   if (now >= lockAt) {
     return {
       locked: true,
-      reason: 'Attendance is locked. Activity date has passed.'
-    };
+      reason: 'Attendance is locked. Activity date has expired.'
+    }
   }
 
-  // ✅ Allowed
-  return { locked: false, reason: null };
+  // ✅ Always allowed before expiration
+  return { locked: false, reason: null }
 }
 
 export default function AttendancePage() {
