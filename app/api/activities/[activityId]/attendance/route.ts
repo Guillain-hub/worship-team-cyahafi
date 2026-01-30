@@ -69,30 +69,31 @@ export async function POST(
     const activity = await prisma.activity.findUnique({ where: { id: activityId } })
     if (!activity) return NextResponse.json({ error: "Activity not found" }, { status: 404 })
     const now = new Date()
-    let eventDate: Date | null = activity.date ? new Date(activity.date) : null
-    // compute lock boundary = midnight at the start of the day AFTER activity.date
-    if (eventDate) {
-      const lockAt = new Date(eventDate)
-      lockAt.setHours(0, 0, 0, 0)
-      lockAt.setDate(lockAt.getDate() + 1)
 
-      // If current time is on/after the lock time, block
-      if (now >= lockAt) {
-        return NextResponse.json({ error: "Attendance locked (activity date passed)" }, { status: 403 })
-      }
-
-      // If activity has a specific time and we're still before that time, block (pre-event)
-      if (activity.time) {
-        const eventAt = new Date(eventDate)
-        const parts = String(activity.time).split(':')
-        if (parts.length >= 2) {
-          const hh = Number(parts[0]) || 0
-          const mm = Number(parts[1]) || 0
-          eventAt.setHours(hh, mm, 0, 0)
-          if (now < eventAt) {
-            return NextResponse.json({ error: `Attendance locked until ${eventAt.toISOString()}` }, { status: 403 })
-          }
+    // Robustly handle activity.date which may be stored as a date-only string
+    // or a full ISO datetime. We compute the local year/month/day and then
+    // set lockAt to midnight of the following day in local timezone.
+    let year: number | null = null
+    let month: number | null = null
+    let day: number | null = null
+    if (activity.date) {
+      const dateStr = String(activity.date)
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        [year, month, day] = dateStr.split('-').map(Number)
+      } else {
+        const parsed = new Date(dateStr)
+        if (!isNaN(parsed.getTime())) {
+          year = parsed.getFullYear()
+          month = parsed.getMonth() + 1
+          day = parsed.getDate()
         }
+      }
+    }
+
+    if (year && month && day) {
+      const lockAt = new Date(year, month - 1, day + 1, 0, 0, 0)
+      if (now >= lockAt) {
+        return NextResponse.json({ error: "Attendance locked. Activity date has expired." }, { status: 403 })
       }
     }
 
