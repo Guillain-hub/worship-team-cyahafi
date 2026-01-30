@@ -94,22 +94,6 @@ export default function AttendancePage() {
         setMembers(mJson.members || [])
         setAssignedLeaderId(aJson.activity?.attendanceById || aJson.activity?.attendanceBy)
 
-        // Check authorization: only Admin or the assigned leader can take attendance
-        const assignedLeader = aJson.activity?.attendanceBy
-        const userIsAdmin = user?.role === "Admin"
-        const userIsAssignedLeader = user?.fullName === assignedLeader
-        const isAuthorized = userIsAdmin || userIsAssignedLeader
-
-        console.log('Attendance authorization check:', {
-          assignedLeader,
-          currentUser: user?.fullName,
-          userIsAdmin,
-          userIsAssignedLeader,
-          isAuthorized
-        })
-
-        setAccessAllowed(isAuthorized)
-
         const map: Record<string, AttendanceStatus> = {}
         const savedFlag = attJson && typeof attJson.saved === 'boolean' ? attJson.saved : (Array.isArray(attJson.attendance) && attJson.attendance.length > 0)
 
@@ -132,8 +116,8 @@ export default function AttendancePage() {
         }
         setAttendance(map)
 
-        // 🔐 Apply attendance lock logic on page load
-        if (isAuthorized && !savedFlag) {
+        // 🔐 Apply attendance lock logic on page load (expiration-only)
+        if (!savedFlag) {
           const { locked, reason } = computeAttendanceLock(aJson.activity)
           setAttendanceLocked(locked)
           setLockMessage(reason)
@@ -149,32 +133,20 @@ export default function AttendancePage() {
   // 🔹 DEDICATED ACCESS CONTROL EFFECT
   // This runs separately to ensure assignedLeaderId is available before checking access
   useEffect(() => {
-    if (!user) {
+    if (!user || !assignedLeaderId) {
       setAccessAllowed(false)
       return
     }
 
-    const userRole = typeof user.role === 'object' && user.role ? user.role.name : user.role
+    const role = typeof user.role === 'object' ? user.role.name : user.role
 
-    console.log('DEBUG Access Control:', {
-      userId: user?.id,
-      assignedLeaderId,
-      userRole,
-      userIdType: typeof user?.id,
-      assignedIdType: typeof assignedLeaderId,
-      isMatch: String(user?.id) === String(assignedLeaderId)
-    })
-
-    if (userRole === 'Admin') {
+    if (role === 'Admin') {
       setAccessAllowed(true)
       return
     }
 
-    if (userRole === 'Leader') {
-      // Only the assigned leader can take attendance
-      // Convert both to strings to handle any type mismatches
-      const isAssigned = String(user.id) === String(assignedLeaderId)
-      setAccessAllowed(isAssigned)
+    if (role === 'Leader') {
+      setAccessAllowed(String(user.id) === String(assignedLeaderId))
       return
     }
 
