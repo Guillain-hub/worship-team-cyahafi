@@ -21,10 +21,24 @@ function computeAttendanceLock(activity: any) {
     return { locked: true, reason: 'Activity date is missing' }
   }
 
-  // Parse YYYY-MM-DD safely (LOCAL time)
-  const [year, month, day] = activity.date.split('-').map(Number)
+  // Support both YYYY-MM-DD and full ISO datetime from the API.
+  // If server sends an ISO string (e.g. 2026-01-30T00:00:00.000Z) we parse it
+  // then use the local year/month/day to compute the lock time.
+  let year: number, month: number, day: number
+  const dateOnlyMatch = /^\d{4}-\d{2}-\d{2}$/.test(activity.date)
+  if (dateOnlyMatch) {
+    [year, month, day] = activity.date.split('-').map(Number)
+  } else {
+    const parsed = new Date(activity.date)
+    if (isNaN(parsed.getTime())) {
+      return { locked: true, reason: 'Activity date is invalid' }
+    }
+    year = parsed.getFullYear()
+    month = parsed.getMonth() + 1
+    day = parsed.getDate()
+  }
 
-  // Lock at midnight AFTER activity day
+  // Lock at midnight AFTER activity day (local timezone)
   const lockAt = new Date(year, month - 1, day + 1, 0, 0, 0)
 
   console.log("Now:", now.toString())
@@ -38,7 +52,6 @@ function computeAttendanceLock(activity: any) {
     }
   }
 
-  // ✅ Always allowed before expiration
   return { locked: false, reason: null }
 }
 
