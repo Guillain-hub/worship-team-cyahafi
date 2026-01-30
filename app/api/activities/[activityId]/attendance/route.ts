@@ -65,36 +65,19 @@ export async function POST(
       )
     }
 
-    // Server-side lock: do not allow saving if activity day has passed (locked at midnight after date)
+    // Server-side lock: expiration-only (midnight AFTER activity date)
     const activity = await prisma.activity.findUnique({ where: { id: activityId } })
     if (!activity) return NextResponse.json({ error: "Activity not found" }, { status: 404 })
     const now = new Date()
 
-    // Robustly handle activity.date which may be stored as a date-only string
-    // or a full ISO datetime. We compute the local year/month/day and then
-    // set lockAt to midnight of the following day in local timezone.
-    let year: number | null = null
-    let month: number | null = null
-    let day: number | null = null
-    if (activity.date) {
-      const dateStr = String(activity.date)
-      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-        [year, month, day] = dateStr.split('-').map(Number)
-      } else {
-        const parsed = new Date(dateStr)
-        if (!isNaN(parsed.getTime())) {
-          year = parsed.getFullYear()
-          month = parsed.getMonth() + 1
-          day = parsed.getDate()
-        }
-      }
+    if (!activity.date) {
+      return NextResponse.json({ error: 'Activity date is missing' }, { status: 403 })
     }
 
-    if (year && month && day) {
-      const lockAt = new Date(year, month - 1, day + 1, 0, 0, 0)
-      if (now >= lockAt) {
-        return NextResponse.json({ error: "Attendance locked. Activity date has expired." }, { status: 403 })
-      }
+    const [year, month, day] = String(activity.date).split('-').map(Number)
+    const lockAt = new Date(year, month - 1, day + 1, 0, 0, 0)
+    if (now >= lockAt) {
+      return NextResponse.json({ error: 'Attendance is locked. Activity date has expired.' }, { status: 403 })
     }
 
     const created = await prisma.attendance.createMany({
@@ -138,31 +121,19 @@ export async function PUT(
       )
     }
 
-    // Server-side lock: do not allow updates if activity day has passed (locked at midnight after date)
+    // Server-side lock: expiration-only (midnight AFTER activity date)
     const activity = await prisma.activity.findUnique({ where: { id: activityId } })
     if (!activity) return NextResponse.json({ error: "Activity not found" }, { status: 404 })
     const now = new Date()
-    let eventDate: Date | null = activity.date ? new Date(activity.date) : null
-    if (eventDate) {
-      const lockAt = new Date(eventDate)
-      lockAt.setHours(0, 0, 0, 0)
-      lockAt.setDate(lockAt.getDate() + 1)
-      if (now >= lockAt) {
-        return NextResponse.json({ error: "Attendance locked (activity date passed)" }, { status: 403 })
-      }
 
-      if (activity.time) {
-        const eventAt = new Date(eventDate)
-        const parts = String(activity.time).split(':')
-        if (parts.length >= 2) {
-          const hh = Number(parts[0]) || 0
-          const mm = Number(parts[1]) || 0
-          eventAt.setHours(hh, mm, 0, 0)
-          if (now < eventAt) {
-            return NextResponse.json({ error: `Attendance locked until ${eventAt.toISOString()}` }, { status: 403 })
-          }
-        }
-      }
+    if (!activity.date) {
+      return NextResponse.json({ error: 'Activity date is missing' }, { status: 403 })
+    }
+
+    const [year, month, day] = String(activity.date).split('-').map(Number)
+    const lockAt = new Date(year, month - 1, day + 1, 0, 0, 0)
+    if (now >= lockAt) {
+      return NextResponse.json({ error: 'Attendance is locked. Activity date has expired.' }, { status: 403 })
     }
 
     // Update each member attendance
