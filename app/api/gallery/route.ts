@@ -1,17 +1,29 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-)
+let supabase: ReturnType<typeof createClient> | null = null
+
+function getSupabaseClient() {
+  if (!supabase) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!url || !key) {
+      throw new Error('Missing Supabase credentials: NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
+    }
+
+    supabase = createClient(url, key)
+  }
+  return supabase
+}
 
 const BUCKET = 'gallery'
 const DATA_TABLE = 'gallery_items'
 
 async function readGallery() {
   try {
-    const { data, error } = await supabase
+    const client = getSupabaseClient()
+    const { data, error } = await client
       .from(DATA_TABLE)
       .select('*')
       .order('created_at', { ascending: false })
@@ -26,7 +38,8 @@ async function readGallery() {
 
 async function writeGalleryItem(item: any) {
   try {
-    const { data, error } = await supabase
+    const client = getSupabaseClient()
+    const { data, error } = await client
       .from(DATA_TABLE)
       .insert([item])
       .select()
@@ -91,7 +104,8 @@ export async function POST(req: Request) {
 
       // Upload to Supabase Storage
       const bytes = await file.arrayBuffer()
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const client = getSupabaseClient()
+      const { data: uploadData, error: uploadError } = await client.storage
         .from(BUCKET)
         .upload(filename, Buffer.from(bytes), {
           contentType: file.type,
@@ -103,7 +117,7 @@ export async function POST(req: Request) {
       }
 
       // Get public URL
-      const { data: publicUrl } = supabase.storage
+      const { data: publicUrl } = client.storage
         .from(BUCKET)
         .getPublicUrl(filename)
 
@@ -144,7 +158,8 @@ export async function DELETE(req: Request) {
 
     // Delete file from storage if it exists
     if (item.storage_path) {
-      const { error: deleteError } = await supabase.storage
+      const client = getSupabaseClient()
+      const { error: deleteError } = await client.storage
         .from(BUCKET)
         .remove([item.storage_path])
 
@@ -155,7 +170,8 @@ export async function DELETE(req: Request) {
     }
 
     // Delete from database
-    const { error: dbError } = await supabase
+    const client = getSupabaseClient()
+    const { error: dbError } = await client
       .from(DATA_TABLE)
       .delete()
       .eq('id', itemId)
