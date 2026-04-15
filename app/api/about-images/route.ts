@@ -1,136 +1,174 @@
-import fs from 'fs/promises';
-import path from 'path';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
-const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads', 'about');
-const DATA_FILE = path.join(process.cwd(), 'data', 'about-images.json');
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+)
 
-async function ensureDirs() {
-  try {
-    await fs.mkdir(UPLOAD_DIR, { recursive: true });
-    await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
-  } catch (e) {
-    console.error('Failed to create directories:', e);
-  }
-}
+const BUCKET = 'about-images'
+const DATA_TABLE = 'about_images'
 
 async function readAboutImages() {
   try {
-    const data = await fs.readFile(DATA_FILE, 'utf-8');
-    return JSON.parse(data);
+    const { data, error } = await supabase
+      .from(DATA_TABLE)
+      .select('*')
+      .order('order', { ascending: true })
+
+    if (error) throw error
+    return { items: data || [] }
   } catch (e) {
-    return { items: [] };
+    console.error('Failed to read about images:', e)
+    return { items: [] }
   }
 }
 
-async function writeAboutImages(data: any) {
+async function writeAboutImageItem(item: any) {
   try {
-    await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    const { data, error } = await supabase
+      .from(DATA_TABLE)
+      .insert([item])
+      .select()
+
+    if (error) throw error
+    return data?.[0]
   } catch (e) {
-    console.error('Failed to write about images data:', e);
+    console.error('Failed to write about image item:', e)
+    throw e
   }
 }
 
 export async function GET() {
   try {
-    await ensureDirs();
-    const aboutImages = await readAboutImages();
-    return NextResponse.json(aboutImages);
+    const aboutImages = await readAboutImages()
+    return NextResponse.json(aboutImages)
   } catch (err: any) {
-    console.error('GET /api/about-images error', err);
-    return NextResponse.json({ items: [] });
+    console.error('GET /api/about-images error', err)
+    return NextResponse.json({ items: [] })
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    await ensureDirs();
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
-    const caption = formData.get('caption') as string;
+    const formData = await request.formData()
+    const file = formData.get('file') as File
+    const caption = formData.get('caption') as string
 
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
     // Generate unique filename
-    const timestamp = Date.now();
-    const ext = file.name.split('.').pop() || 'jpg';
-    const filename = `${timestamp}-${Math.random().toString(36).substring(7)}.${ext}`;
-    const filepath = path.join(UPLOAD_DIR, filename);
+    const timestamp = Date.now()
+    const ext = file.name.split('.').pop() || 'jpg'
+    const filename = `${timestamp}-${Math.random().toString(36).substring(7)}.${ext}`
 
-    // Save file
-    const bytes = await file.arrayBuffer();
-    await fs.writeFile(filepath, Buffer.from(bytes));
+    // Upload to Supabase Storage
+    const bytes = await file.arrayBuffer()
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from(BUCKET)
+      .upload(filename, Buffer.from(bytes), {
+        contentType: file.type,
+      })
 
-    // Update about images data
-    const aboutImages = await readAboutImages();
+    if (uploadError) {
+      console.error('Upload error:', uploadError)
+      return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
+    }
+
+    // Get public URL
+    const { data: publicUrl } = supabase.storage
+      .from(BUCKET)
+      .getPublicUrl(filename)
+
+    // Get max order for sequencing
+    const aboutImages = await readAboutImages()
     const maxOrder = aboutImages.items.length > 0
       ? Math.max(...aboutImages.items.map((i: any) => i.order || 0))
-      : 0;
+      : 0
 
+    // Save metadata to database
     const newItem = {
       id: timestamp,
-      url: `/uploads/about/${filename}`,
+      url: publicUrl.publicUrl,
       caption: caption || 'Untitled',
+      storage_path: filename,
       order: maxOrder + 1,
-    };
+      created_at: new Date().toISOString(),
+    }
 
-    aboutImages.items.push(newItem);
-    await writeAboutImages(aboutImages);
-
-    return NextResponse.json(newItem, { status: 201 });
+    const item = await writeAboutImageItem(newItem)
+    return NextResponse.json(item, { status: 201 })
   } catch (err: any) {
-    console.error('POST /api/about-images error', err);
-    return NextResponse.json({ error: String(err?.message || err) }, { status: 500 });
+    console.error('POST /api/about-images error', err)
+    return NextResponse.json({ error: String(err?.message || err) }, { status: 500 })
   }
 }
 
 export async function DELETE(request: NextRequest) {
   try {
-    await ensureDirs();
-    const { itemId } = await request.json();
+    const { itemId } = await request.json()
 
     if (!itemId) {
-      return NextResponse.json({ error: 'No itemId provided' }, { status: 400 });
+      return NextResponse.json({ error: 'No itemId provided' }, { status: 400 })
     }
 
-    // Read about images
-    const aboutImages = await readAboutImages();
-    const item = aboutImages.items.find((i: any) => i.id === itemId);
+    // Read about images to find the item
+    const aboutImages = await readAboutImages()
+    const item = aboutImages.items.find((i: any) => i.id === itemId)
 
     if (!item) {
-      return NextResponse.json({ error: 'Item not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Item not found' }, { status: 404 })
     }
 
-    // Delete file
-    const filename = item.url.split('/').pop();
-    const filepath = path.join(UPLOAD_DIR, filename);
-    try {
-      await fs.unlink(filepath);
-    } catch (e) {
-      console.error('Failed to delete file:', e);
+    // Delete file from storage if it exists
+    if (item.storage_path) {
+      const { error: deleteError } = await supabase.storage
+        .from(BUCKET)
+        .remove([item.storage_path])
+
+      if (deleteError) {
+        console.error('Storage delete error:', deleteError)
+        // Continue anyway - still delete from database
+      }
     }
 
-    // Update about images data
-    aboutImages.items = aboutImages.items.filter((i: any) => i.id !== itemId);
-    await writeAboutImages(aboutImages);
+    // Delete from database
+    const { error: dbError } = await supabase
+      .from(DATA_TABLE)
+      .delete()
+      .eq('id', itemId)
 
-    return NextResponse.json({ success: true });
+    if (dbError) {
+      console.error('Database delete error:', dbError)
+      return NextResponse.json({ error: 'Delete failed' }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true })
   } catch (err: any) {
-    console.error('DELETE /api/about-images error', err);
-    return NextResponse.json({ error: String(err?.message || err) }, { status: 500 });
+    console.error('DELETE /api/about-images error', err)
+    return NextResponse.json({ error: String(err?.message || err) }, { status: 500 })
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    await ensureDirs();
-    const body = await request.json();
-    await writeAboutImages(body);
-    return NextResponse.json({ success: true });
+    const body = await request.json()
+    
+    // Bulk update orders
+    if (Array.isArray(body.items)) {
+      const { error } = await supabase
+        .from(DATA_TABLE)
+        .upsert(body.items, { onConflict: 'id' })
+
+      if (error) throw error
+      return NextResponse.json({ success: true })
+    }
+
+    return NextResponse.json({ success: false }, { status: 400 })
   } catch (error) {
-    console.error('Error updating about images:', error);
-    return NextResponse.json({ success: false }, { status: 500 });
+    console.error('Error updating about images:', error)
+    return NextResponse.json({ success: false }, { status: 500 })
   }
 }

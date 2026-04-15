@@ -1,39 +1,46 @@
 import { NextResponse } from 'next/server'
-import fs from 'fs/promises'
-import path from 'path'
+import { createClient } from '@supabase/supabase-js'
 
-const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads', 'gallery')
-const DATA_FILE = path.join(process.cwd(), 'data', 'gallery.json')
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+)
 
-async function ensureDirs() {
-  try {
-    await fs.mkdir(UPLOAD_DIR, { recursive: true })
-    await fs.mkdir(path.dirname(DATA_FILE), { recursive: true })
-  } catch (e) {
-    console.error('Failed to create directories:', e)
-  }
-}
+const BUCKET = 'gallery'
+const DATA_TABLE = 'gallery_items'
 
 async function readGallery() {
   try {
-    const data = await fs.readFile(DATA_FILE, 'utf-8')
-    return JSON.parse(data)
+    const { data, error } = await supabase
+      .from(DATA_TABLE)
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return { items: data || [] }
   } catch (e) {
+    console.error('Failed to read gallery:', e)
     return { items: [] }
   }
 }
 
-async function writeGallery(data: any) {
+async function writeGalleryItem(item: any) {
   try {
-    await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8')
+    const { data, error } = await supabase
+      .from(DATA_TABLE)
+      .insert([item])
+      .select()
+
+    if (error) throw error
+    return data?.[0]
   } catch (e) {
-    console.error('Failed to write gallery data:', e)
+    console.error('Failed to write gallery item:', e)
+    throw e
   }
 }
 
 export async function GET() {
   try {
-    await ensureDirs()
     const gallery = await readGallery()
     return NextResponse.json(gallery)
   } catch (err: any) {
@@ -44,11 +51,8 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    await ensureDirs()
-    
-    // Check if request is JSON or FormData
     const contentType = req.headers.get('content-type') || ''
-    
+
     if (contentType.includes('application/json')) {
       // Handle video URL submission
       const body = await req.json()
@@ -58,21 +62,19 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Invalid video data' }, { status: 400 })
       }
 
-      const gallery = await readGallery()
       const newItem = {
         id: id || Date.now(),
         type: 'video',
         url,
         caption: caption || 'Video',
         duration: '',
+        created_at: new Date().toISOString(),
       }
 
-      gallery.items.push(newItem)
-      await writeGallery(gallery)
-
-      return NextResponse.json(newItem, { status: 201 })
+      const item = await writeGalleryItem(newItem)
+      return NextResponse.json(item, { status: 201 })
     } else {
-      // Handle file upload (image)
+      // Handle file upload (image) with Supabase Storage
       const formData = await req.formData()
       const file = formData.get('file') as File
       const caption = formData.get('caption') as string
@@ -86,25 +88,37 @@ export async function POST(req: Request) {
       const timestamp = Date.now()
       const ext = file.name.split('.').pop() || 'jpg'
       const filename = `${timestamp}-${Math.random().toString(36).substring(7)}.${ext}`
-      const filepath = path.join(UPLOAD_DIR, filename)
 
-      // Save file
+      // Upload to Supabase Storage
       const bytes = await file.arrayBuffer()
-      await fs.writeFile(filepath, Buffer.from(bytes))
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from(BUCKET)
+        .upload(filename, Buffer.from(bytes), {
+          contentType: file.type,
+        })
 
-      // Update gallery data
-      const gallery = await readGallery()
+      if (uploadError) {
+        console.error('Upload error:', uploadError)
+        return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
+      }
+
+      // Get public URL
+      const { data: publicUrl } = supabase.storage
+        .from(BUCKET)
+        .getPublicUrl(filename)
+
+      // Save metadata to database
       const newItem = {
         id: timestamp,
         type: type || 'image',
-        url: `/uploads/gallery/${filename}`,
+        url: publicUrl.publicUrl,
         caption: caption || 'Untitled',
+        storage_path: filename,
+        created_at: new Date().toISOString(),
       }
 
-      gallery.items.push(newItem)
-      await writeGallery(gallery)
-
-      return NextResponse.json(newItem, { status: 201 })
+      const item = await writeGalleryItem(newItem)
+      return NextResponse.json(item, { status: 201 })
     }
   } catch (err: any) {
     console.error('POST /api/gallery error', err)
@@ -114,14 +128,13 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    await ensureDirs()
     const { itemId } = await req.json()
 
     if (!itemId) {
       return NextResponse.json({ error: 'No itemId provided' }, { status: 400 })
     }
 
-    // Read gallery
+    // Read gallery to find the item
     const gallery = await readGallery()
     const item = gallery.items.find((i: any) => i.id === itemId)
 
@@ -129,18 +142,28 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: 'Item not found' }, { status: 404 })
     }
 
-    // Delete file
-    const filename = item.url.split('/').pop()
-    const filepath = path.join(UPLOAD_DIR, filename)
-    try {
-      await fs.unlink(filepath)
-    } catch (e) {
-      console.error('Failed to delete file:', e)
+    // Delete file from storage if it exists
+    if (item.storage_path) {
+      const { error: deleteError } = await supabase.storage
+        .from(BUCKET)
+        .remove([item.storage_path])
+
+      if (deleteError) {
+        console.error('Storage delete error:', deleteError)
+        // Continue anyway - still delete from database
+      }
     }
 
-    // Update gallery data
-    gallery.items = gallery.items.filter((i: any) => i.id !== itemId)
-    await writeGallery(gallery)
+    // Delete from database
+    const { error: dbError } = await supabase
+      .from(DATA_TABLE)
+      .delete()
+      .eq('id', itemId)
+
+    if (dbError) {
+      console.error('Database delete error:', dbError)
+      return NextResponse.json({ error: 'Delete failed' }, { status: 500 })
+    }
 
     return NextResponse.json({ success: true })
   } catch (err: any) {
