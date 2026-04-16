@@ -68,8 +68,27 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File
     const caption = formData.get('caption') as string
 
+    console.log('POST /api/about-images - File upload request:', {
+      fileName: file?.name,
+      fileSize: file?.size,
+      fileType: file?.type,
+      caption,
+    })
+
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+    }
+
+    // Check Supabase credentials
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      return NextResponse.json({ 
+        error: 'Server error: NEXT_PUBLIC_SUPABASE_URL not configured' 
+      }, { status: 500 })
+    }
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return NextResponse.json({ 
+        error: 'Server error: SUPABASE_SERVICE_ROLE_KEY not configured' 
+      }, { status: 500 })
     }
 
     // Generate unique filename
@@ -80,6 +99,9 @@ export async function POST(request: NextRequest) {
     // Upload to Supabase Storage
     const bytes = await file.arrayBuffer()
     const client = getSupabaseClient()
+    
+    console.log('Starting upload:', { filename, fileSize: bytes.byteLength, contentType: file.type })
+
     const { data: uploadData, error: uploadError } = await client.storage
       .from(BUCKET)
       .upload(filename, Buffer.from(bytes), {
@@ -87,9 +109,17 @@ export async function POST(request: NextRequest) {
       })
 
     if (uploadError) {
-      console.error('Upload error:', uploadError)
-      return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
+      console.error('Upload error details:', {
+        message: uploadError.message,
+        statusCode: uploadError.statusCode,
+        error: uploadError,
+      })
+      return NextResponse.json({ 
+        error: `Upload failed: ${uploadError.message}` 
+      }, { status: 500 })
     }
+
+    console.log('Upload successful:', { filename, uploadData })
 
     // Get public URL
     const { data: publicUrl } = client.storage
@@ -115,7 +145,11 @@ export async function POST(request: NextRequest) {
     const item = await writeAboutImageItem(newItem)
     return NextResponse.json(item, { status: 201 })
   } catch (err: any) {
-    console.error('POST /api/about-images error', err)
+    console.error('POST /api/about-images error:', {
+      message: err?.message,
+      stack: err?.stack,
+      error: err,
+    })
     return NextResponse.json({ error: String(err?.message || err) }, { status: 500 })
   }
 }
