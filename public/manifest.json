@@ -3,7 +3,7 @@
   "short_name": "WorshipTeam cyahafi",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#000000",
   "theme_color": "#0a0612",
   "description": "Worship team management and coordination platform for ADEPR Cyahafi",
   "scope": "/",
