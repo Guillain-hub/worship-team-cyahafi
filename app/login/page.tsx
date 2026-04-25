@@ -186,16 +186,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden flex flex-col items-center justify-center px-2 sm:px-4">
-      {/* --- SUNRISE BACKGROUND --- */}
-      <div 
-        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-transform duration-[10000ms] scale-110 hover:scale-100"
-        style={{ 
-          backgroundImage: `url('https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?q=80&w=2070')` 
-        }}
-      />
-      {/* Overlay for readability */}
-      <div className="absolute inset-0 z-10 bg-black/30 backdrop-blur-[2px]" />
+    <div className="relative min-h-screen w-full overflow-hidden flex flex-col items-center justify-center px-2 sm:px-4 bg-slate-950 text-white">
+      <div className="absolute inset-0 z-0 bg-slate-950" />
+      <div className="absolute inset-0 z-10 bg-slate-950/90 backdrop-blur-[2px]" />
 
       {/* Back to Landing Button */}
       <Link href="/" className="absolute top-4 left-4 z-30 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all border border-white/20 hover:border-white/40 pointer-events-auto" style={{ touchAction: 'manipulation' }}>

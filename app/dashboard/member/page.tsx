@@ -130,21 +130,21 @@ export default function MemberPage() {
   if (loading) return <div className="h-96 w-full flex items-center justify-center"><Loader2 className="animate-spin text-primary" size={24} /></div>
 
   return (
-    <div className="w-full min-h-screen space-y-6 md:space-y-8 lg:space-y-12 pb-16 md:pb-20 px-3 sm:px-4 md:px-6 pt-3 md:pt-4 lg:pt-8 text-foreground bg-background">
+    <div className="w-full min-h-screen space-y-6 md:space-y-8 lg:space-y-12 pb-16 md:pb-20 px-3 sm:px-4 md:px-6 pt-3 md:pt-4 lg:pt-8 text-white bg-slate-950">
       
       {/* SUMMARY STATS */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-6 py-2 sm:py-3 md:py-4 lg:py-6 border-b border-border/50">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-6 py-2 sm:py-3 md:py-4 lg:py-6 border-b border-white/10">
         {[
           { label: "My Name", val: user.fullName, icon: User },
           { label: "Attendance %", val: attendancePercentage, icon: CalendarCheck },
           { label: "Total Contributions", val: rwf(totalContributions), icon: HandCoins },
           { label: "Activities", val: activities.length, icon: AlertCircle },
         ].map((item, i) => (
-          <div key={i} className="space-y-0.5 sm:space-y-1 p-1.5 sm:p-2 md:p-3 lg:p-4 rounded-lg hover:bg-muted/30 transition-colors">
-            <p className="text-[6px] sm:text-[7px] md:text-[8px] lg:text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-0.5 md:gap-1">
+          <div key={i} className="space-y-0.5 sm:space-y-1 p-1.5 sm:p-2 md:p-3 lg:p-4 rounded-3xl border border-white/10 bg-slate-900/70 shadow-xl shadow-black/10 backdrop-blur-xl">
+            <p className="text-[6px] sm:text-[7px] md:text-[8px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-0.5 md:gap-1">
               <item.icon size={10} className="md:w-3 md:h-3 lg:w-4 lg:h-4 text-primary flex-shrink-0" /> {item.label}
             </p>
-            <h2 className="text-xs sm:text-sm md:text-base lg:text-xl xl:text-2xl font-black tracking-tighter hover:text-primary transition-colors line-clamp-2">{item.val}</h2>
+            <h2 className="text-xs sm:text-sm md:text-base lg:text-xl xl:text-2xl font-black tracking-tighter hover:text-primary transition-colors line-clamp-2 text-white">{item.val}</h2>
           </div>
         ))}
       </div>
@@ -152,77 +152,84 @@ export default function MemberPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 lg:gap-12">
         
         {/* LEFT: ANNOUNCEMENTS & CONTRIBUTIONS */}
-        <div className="lg:col-span-7 space-y-4 md:space-y-6 lg:space-y-8">
-          <div className="space-y-2 md:space-y-3">
-            <h3 className="text-[7px] sm:text-[8px] md:text-[9px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1">
-              <Megaphone size={12} className="text-primary flex-shrink-0" /> Announcements
-            </h3>
-          </div>
+        <div className="lg:col-span-7 space-y-6 md:space-y-8 lg:space-y-10">
+          <section className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-6 shadow-2xl shadow-black/20 backdrop-blur-xl">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <p className="text-xs uppercase tracking-[0.35em] text-primary/70">Broadcast panel</p>
+                <h2 className="mt-2 text-xl font-semibold text-white">My announcements</h2>
+              </div>
+            </div>
 
-          <div className="space-y-2 sm:space-y-2.5 md:space-y-3 max-h-80 sm:max-h-96 md:max-h-none overflow-y-auto pr-2">
-            {announcements.length === 0 ? (
-              <p className="text-xs text-muted-foreground italic">No announcements yet.</p>
-            ) : (
-              announcements.map((ann) => (
-                <div key={ann.id} className="border-l-2 border-primary/20 pl-1.5 sm:pl-2 md:pl-3 lg:pl-4 py-1.5 sm:py-2 md:py-3 bg-card rounded-md">
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-0.5 sm:gap-1 md:gap-2">
-                      <span className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] font-black uppercase tracking-tight text-primary">{ann.author || 'System'}</span>
-                      <span className="text-[6px] sm:text-[7px] md:text-[8px] lg:text-[10px] font-medium text-muted-foreground whitespace-nowrap">
-                        {timeAgo(ann.time || ann.createdAt)}
-                      </span>
+            <div className="mt-6 space-y-4">
+              {announcements.length === 0 ? (
+                <p className="text-sm text-slate-400">No announcements yet.</p>
+              ) : (
+                <div className="space-y-4 max-h-80 sm:max-h-96 md:max-h-none overflow-y-auto pr-2">
+                  {announcements.map((ann) => (
+                    <div key={ann.id} className="rounded-3xl border border-white/10 bg-slate-900/70 p-4 transition hover:border-primary/40 hover:bg-slate-900/80">
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap items-center gap-0.5 sm:gap-1 md:gap-2">
+                          <span className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] font-black uppercase tracking-tight text-primary">{ann.author || 'System'}</span>
+                          <span className="text-[6px] sm:text-[7px] md:text-[8px] lg:text-[10px] font-medium text-slate-400 whitespace-nowrap">
+                            {timeAgo(ann.time || ann.createdAt)}
+                          </span>
+                        </div>
+                        <p className="text-[10px] sm:text-xs md:text-sm text-slate-200 leading-relaxed break-words line-clamp-2 sm:line-clamp-3 md:line-clamp-none">{ann.content}</p>
+                      </div>
                     </div>
-                    <p className="text-[10px] sm:text-xs md:text-sm text-foreground/90 leading-relaxed break-words line-clamp-2 sm:line-clamp-3 md:line-clamp-none">{ann.content}</p>
-                  </div>
+                  ))}
                 </div>
-              ))
-            )}
-          </div>
+              )}
+            </div>
+          </section>
 
-          {/* CONTRIBUTIONS */}
-          <div className="space-y-2 sm:space-y-2.5 md:space-y-3 lg:space-y-4 pt-2 sm:pt-3 md:pt-4 lg:pt-6 border-t border-border/30">
-            <button 
-              onClick={() => setShowContributions(!showContributions)}
-              className="flex items-center justify-between w-full px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-3 rounded-lg bg-gradient-to-r from-primary/15 to-primary/10 border border-primary/40 hover:border-primary/70 hover:from-primary/25 hover:to-primary/15 transition-all duration-200 group shadow-sm hover:shadow-md active:scale-95"
-            >
-              <h3 className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] font-black uppercase tracking-[0.2em] text-primary flex items-center gap-1.5 md:gap-2 group-hover:gap-2 md:group-hover:gap-2.5 transition-all">
-                <HandCoins size={13} className="md:w-3.5 md:h-3.5 lg:w-4 lg:h-4 flex-shrink-0" /> Contributions
-              </h3>
-              <div className="flex items-center gap-2">
-                <span className={`text-sm sm:text-base md:text-lg font-bold text-primary transition-transform duration-300 ${showContributions ? 'rotate-0' : 'rotate-180'}`}>
+          <section className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-6 shadow-2xl shadow-black/20 backdrop-blur-xl">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <p className="text-xs uppercase tracking-[0.35em] text-primary/70">Contribution summary</p>
+                <h2 className="mt-2 text-xl font-semibold text-white">My contributions</h2>
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-5">
+              <button 
+                onClick={() => setShowContributions(!showContributions)}
+                className="flex items-center justify-between w-full px-4 py-3 rounded-3xl bg-slate-900/70 border border-white/10 hover:border-primary/40 transition-all duration-200 shadow-sm"
+              >
+                <h3 className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-primary flex items-center gap-2">
+                  <HandCoins size={14} /> Contributions
+                </h3>
+                <span className={`text-sm font-bold text-primary transition-transform duration-300 ${showContributions ? 'rotate-0' : 'rotate-180'}`}>
                   ▼
                 </span>
-              </div>
-            </button>
-            {showContributions && (
-              <div className="space-y-1.5 sm:space-y-2 md:space-y-3 animate-in fade-in duration-300">
-                {contributions.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">No contributions yet.</p>
-                ) : (
-                  contributions.map((c) => (
-                    <div key={c.contribution.id} className="flex flex-col gap-1.5 p-1.5 sm:p-2 md:p-3 rounded-lg bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 hover:border-primary/40 hover:shadow-md transition-all">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-[10px] sm:text-xs md:text-sm font-bold text-foreground truncate">{c.event.name}</p>
-                          <p className="text-[6px] sm:text-[7px] md:text-[9px] lg:text-[10px] font-medium text-muted-foreground">
-                            {c.event?.date ? new Date(c.event.date).toLocaleDateString() : ''}
-                          </p>
+              </button>
+              {showContributions && (
+                <div className="space-y-3 animate-in fade-in duration-300">
+                  {contributions.length === 0 ? (
+                    <p className="text-sm text-slate-400">No contributions yet.</p>
+                  ) : (
+                    contributions.map((c) => (
+                      <div key={c.contribution.id} className="rounded-3xl border border-white/10 bg-slate-900/70 p-4 shadow-xl shadow-black/10">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-white truncate">{c.event.name}</p>
+                            <p className="text-[10px] text-slate-400 mt-1">{c.event?.date ? new Date(c.event.date).toLocaleDateString() : ''}</p>
+                          </div>
+                          <span className="font-black text-primary text-sm whitespace-nowrap bg-primary/10 px-3 py-1 rounded-full">
+                            {Number(c.contribution.amount || 0).toFixed(0)} RWF
+                          </span>
                         </div>
-                        <p className="font-black text-primary text-[10px] md:text-xs lg:text-sm whitespace-nowrap flex-shrink-0 bg-primary/10 px-1.5 sm:px-2 md:px-3 py-0.5 sm:py-1 rounded-md">
-                          {Number(c.contribution.amount || 0).toFixed(0)} RWF
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[8px] md:text-[9px] lg:text-[10px] font-bold uppercase tracking-tight px-2 py-0.5 rounded bg-primary/15 text-primary whitespace-nowrap">
+                        <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-950/70 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-primary">
                           {c.contribution.type || 'General'}
-                        </span>
+                        </div>
                       </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          </section>
         </div>
 
         {/* RIGHT: ATTENDANCE */}
@@ -237,16 +244,16 @@ export default function MemberPage() {
             </div>
             <div className="space-y-1.5 sm:space-y-2 md:space-y-3 max-h-56 sm:max-h-64 md:max-h-none overflow-y-auto pr-2">
               {upcoming.length === 0 ? (
-                <p className="text-xs text-muted-foreground italic">No upcoming activities.</p>
+                <p className="text-xs text-slate-400 italic">No upcoming activities.</p>
               ) : (
                 upcoming.slice(0, 3).map((act) => (
                   <div key={act.id} className="block">
-                    <div className="flex items-center justify-between gap-1.5 sm:gap-2 p-1.5 sm:p-2 md:p-3 rounded-lg bg-muted/20 border border-transparent hover:border-primary/40 transition-all">
+                    <div className="flex items-center justify-between gap-1.5 sm:gap-2 p-1.5 sm:p-2 md:p-3 rounded-lg bg-slate-900/30 border border-transparent hover:border-primary/40 transition-all">
                       <div className="flex gap-1.5 sm:gap-2 min-w-0 flex-1">
                         <div className="w-0.5 sm:w-1 bg-primary rounded-full flex-shrink-0" />
                         <div className="min-w-0">
-                          <p className="text-[9px] sm:text-xs md:text-sm font-black uppercase tracking-tighter truncate">{act.name}</p>
-                          <p className="text-[6px] sm:text-[7px] md:text-[9px] lg:text-[10px] font-bold text-muted-foreground uppercase truncate">
+                          <p className="text-[9px] sm:text-xs md:text-sm font-black uppercase tracking-tighter truncate text-white">{act.name}</p>
+                          <p className="text-[6px] sm:text-[7px] md:text-[9px] lg:text-[10px] font-bold text-slate-400 uppercase truncate">
                             {act.date ? (act.date as Date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) : ''} @ {act.time || "TBA"}
                           </p>
                         </div>
@@ -260,12 +267,12 @@ export default function MemberPage() {
           </div>
 
           {/* RECENT ATTENDANCE */}
-          <div className="space-y-2 sm:space-y-2.5 md:space-y-3 lg:space-y-4 pt-2 sm:pt-3 md:pt-4 lg:pt-6 border-t border-border/30">
+          <div className="space-y-2 sm:space-y-2.5 md:space-y-3 lg:space-y-4 pt-2 sm:pt-3 md:pt-4 lg:pt-6 border-t border-white/10">
             <button 
               onClick={() => setShowRecentAttendance(!showRecentAttendance)}
               className="flex items-center justify-between w-full px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-3 rounded-lg bg-gradient-to-r from-emerald-600/15 to-emerald-600/10 border border-emerald-600/40 hover:border-emerald-600/70 hover:from-emerald-600/25 hover:to-emerald-600/15 transition-all duration-200 group shadow-sm hover:shadow-md active:scale-95"
             >
-              <h3 className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] font-black uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 md:gap-2 group-hover:gap-2 md:group-hover:gap-2.5 transition-all">
+              <h3 className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-[11px] font-black uppercase tracking-[0.2em] text-emerald-400 flex items-center gap-1.5 md:gap-2 group-hover:gap-2 md:group-hover:gap-2.5 transition-all">
                 <CheckCircle2 size={13} className="md:w-3.5 md:h-3.5 lg:w-4 lg:h-4 flex-shrink-0" /> Recent
               </h3>
               <div className="flex items-center gap-2">

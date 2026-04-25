@@ -254,7 +254,7 @@ export default function AttendancePage() {
       )}
 
       {/* ACTIONS BAR */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-card p-4 rounded-xl border shadow-sm">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-transparent p-4 rounded-xl border shadow-sm">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <label className="text-sm font-medium">Filter List:</label>
@@ -292,9 +292,9 @@ export default function AttendancePage() {
       </div>
 
       {/* MEMBER TABLE */}
-      <Card className="border shadow-md overflow-hidden bg-card">
+      <Card className="border shadow-md overflow-hidden bg-transparent">
         <Table>
-          <TableHeader className="bg-muted/50">
+          <TableHeader className="bg-transparent">
             <TableRow>
               <TableHead className="text-foreground">Member Info</TableHead>
               <TableHead className="text-foreground">Role</TableHead>
@@ -308,7 +308,7 @@ export default function AttendancePage() {
                 return attendance[m.id] === filterStatus
               })
               .map((m) => (
-                <TableRow key={m.id} className="hover:bg-muted/30 transition-colors">
+                <TableRow key={m.id} className="hover:bg-transparent transition-colors">
                   <TableCell>
                     <div className="font-bold text-foreground">{m.fullName}</div>
                     <div className="text-xs text-muted-foreground">{m.phone || "No phone"}</div>
@@ -362,7 +362,7 @@ export default function AttendancePage() {
       </Card>
       
       {!isEditing && hasSavedAttendance && (
-        <div className="text-center p-4 border border-dashed rounded-lg bg-muted/20">
+        <div className="text-center p-4 border border-dashed rounded-lg bg-transparent/20">
           <p className="text-sm text-muted-foreground">
             Attendance is currently in <strong>View Mode</strong>. Click the Edit button above to make changes.
           </p>

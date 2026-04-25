@@ -196,170 +196,210 @@ export default function DashboardPage() {
 
   if (isLoading) return <div className="h-96 w-full flex items-center justify-center"><Loader2 className="animate-spin text-primary" size={24} /></div>
 
+  const attendancePercent = Number(avgAttendance.replace('%', '')) || 0
+
   return (
-    <div className="max-w-6xl mx-auto space-y-8 sm:space-y-12 pb-20 px-2 sm:px-4 pt-4 sm:pt-8 text-foreground bg-background">
-      
-      {/* RESTORED SUMMARY STATS */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 py-4 sm:py-6 border-b border-border/50">
-        {[
-          { label: "Active Members", val: members.length, icon: Users, href: "/dashboard/members" },
-          { label: "Treasury", val: netBalance === null ? '—' : rwf(netBalance), icon: HandCoins, href: "/dashboard/contributions" },
-          { label: "Total Events", val: activities.length, icon: Calendar, href: "/dashboard/activities" },
-          { label: "Avg Attendance", val: avgAttendance, icon: Mic2, href: "/dashboard/activities" },
-        ].map((item, i) => (
-          <Link key={i} href={item.href} className="group">
-            <div className="space-y-1 p-3 rounded-lg hover:bg-muted/30 transition-colors">
-              <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1 sm:gap-2">
-                <item.icon size={12} className="text-primary flex-shrink-0" /> {item.label}
-              </p>
-              <h2 className="text-lg sm:text-2xl font-black tracking-tighter group-hover:text-primary transition-colors">{item.val}</h2>
+    <div className="max-w-7xl mx-auto pb-24 px-3 sm:px-4 pt-4 sm:pt-8 text-foreground">
+      <div className="space-y-8">
+
+        <section className="rounded-[2rem] border border-white/10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 shadow-2xl shadow-black/40 p-6 sm:p-8">
+          <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+            <div className="max-w-3xl">
+              <p className="text-xs uppercase tracking-[0.35em] text-primary/70">Command Center</p>
+              <h1 className="mt-3 text-3xl sm:text-4xl font-semibold tracking-tight text-white">Welcome back, {user?.fullName || 'Team Leader'}</h1>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">Your worship team, finances, and event pulse all in one secure dashboard. Stay on top of member engagement, contributions, and activity momentum.</p>
             </div>
-          </Link>
-        ))}
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 lg:gap-16">
-        
-        {/* LEFT: BROADCAST FEED */}
-        <div className="lg:col-span-7 space-y-6 sm:space-y-10">
-          <div className="space-y-3 sm:space-y-4">
-            <h3 className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 text-muted-foreground">
-              <Megaphone size={12} className="sm:w-4 sm:h-4" /> New Broadcast
-            </h3>
-            {roleName === 'Leader' || roleName === 'Admin' ? (
-              <>
-                <Textarea 
-                  placeholder="Post a team update..."
-                  value={announcement}
-                  onChange={(e) => setAnnouncement(e.target.value)}
-                  className="bg-muted/40 border-none rounded-xl sm:rounded-2xl p-2 sm:p-3 text-xs sm:text-sm focus-visible:ring-1 focus-visible:ring-primary/20 min-h-[60px] sm:min-h-[80px] resize-none w-full"
-                />
-                <div className="flex justify-end">
-                  <Button onClick={handleBroadcastMessage} size="sm" className="rounded-full px-4 sm:px-6 font-black uppercase text-[9px] sm:text-[10px] tracking-widest text-xs sm:text-sm">Post</Button>
-                </div>
-              </>
-            ) : (
-              <p className="text-xs text-muted-foreground">Announcements are posted by Leaders or Admins. You can view them below.</p>
-            )}
-          </div>
-
-          <div className="space-y-6 sm:space-y-8">
-            {announcementsList.map((ann) => (
-              <div key={ann.id} className="group border-l-2 border-primary/20 pl-3 sm:pl-4 py-2 sm:py-3 relative bg-card rounded-md">
-                <div className="flex justify-between items-start gap-3 sm:gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-1">
-                          <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-tight text-primary">{ann.author || 'System'}</span>
-                          <span className="text-[8px] sm:text-[10px] font-medium text-muted-foreground whitespace-nowrap">
-                            {timeAgo(ann.time || ann.createdAt)} • {(ann.time || ann.createdAt) ? new Date(ann.time || ann.createdAt).toLocaleDateString() : ''}
-                          </span>
-                        </div>
-                        {editingId === String(ann.id) ? (
-                          <div className="space-y-2">
-                            <Textarea value={editingContent} onChange={(e) => setEditingContent(e.target.value)} className="min-h-[60px] sm:min-h-[80px] text-xs sm:text-sm" />
-                            <div className="flex gap-2 justify-end">
-                              <Button variant="outline" size="sm" onClick={cancelEdit} className="text-xs sm:text-sm">Cancel</Button>
-                              <Button size="sm" onClick={() => saveEdit(String(ann.id))} className="text-xs sm:text-sm">Save</Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <p className="text-xs sm:text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap break-words">{ann.content}</p>
-                        )}
-                      </div>
-                      {(roleName === 'Leader' || roleName === 'Admin') && (
-                        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                          <button onClick={() => startEdit(ann)} className="p-1 text-muted-foreground hover:text-primary" aria-label="Edit announcement"><Edit3 size={12} className="sm:w-4 sm:h-4" /></button>
-                          <button 
-                            onClick={() => handleDeleteAnnouncement(ann.id)}
-                            className="p-1 text-muted-foreground hover:text-destructive"
-                            aria-label="Delete announcement"
-                          >
-                            <Trash2 size={12} className="sm:w-4 sm:h-4" />
-                          </button>
-                        </div>
-                      )}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-3">
+              {[
+                { label: 'Members', value: members.length, icon: Users },
+                { label: 'Events', value: activities.length, icon: Calendar },
+                { label: 'Active Today', value: upcoming.length, icon: Bell },
+              ].map((item, idx) => (
+                <div key={idx} className="rounded-3xl border border-white/10 bg-slate-900/70 p-4 shadow-xl shadow-black/10 backdrop-blur-xl">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[9px] uppercase tracking-[0.35em] text-slate-400">{item.label}</p>
+                      <p className="mt-3 text-2xl font-semibold text-white">{item.value}</p>
                     </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* RIGHT: SCHEDULE (Upcoming & Recent) */}
-        <div className="lg:col-span-5 space-y-8 sm:space-y-12">
-          
-          {/* UPCOMING */}
-          <div className="space-y-4 sm:space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-primary flex items-center gap-2">
-                <AlertCircle size={12} className="sm:w-4 sm:h-4 flex-shrink-0" /> Upcoming Events
-              </h3>
-              <Link href="/dashboard/activities" className="text-[8px] sm:text-[9px] font-black text-primary hover:underline flex items-center gap-1">
-                View All <ArrowRight size={10} />
-              </Link>
-            </div>
-            <div className="flex flex-col sm:flex-col gap-2 overflow-x-auto sm:overflow-x-visible flex-nowrap sm:flex-wrap pb-2 sm:pb-0 -mx-2 sm:mx-0 px-2 sm:px-0">
-              {upcoming.length === 0 ? (
-                <p className="text-xs text-muted-foreground italic">No events scheduled.</p>
-              ) : (
-                upcoming.slice(0, 3).map((act) => (
-                  <div key={act.id} className="min-w-[260px] sm:min-w-0 sm:w-full flex items-center gap-1 sm:gap-2 p-2 sm:p-3 rounded-none sm:rounded-lg bg-transparent sm:bg-muted/20 border-b sm:border border-muted/30 sm:border-transparent hover:bg-muted/30 transition-colors">
-                    <div className="w-0.5 sm:w-1 bg-primary rounded-full flex-shrink-0 h-4" />
-                    <span className="text-[6px] sm:text-xs font-black uppercase truncate flex-1 whitespace-nowrap">{act.name}</span>
-                    <span className="text-[5px] sm:text-[7px] font-bold text-muted-foreground whitespace-nowrap">{act.date ? (act.date as Date).toLocaleDateString() : ''}</span>
-                    <span className="text-[5px] sm:text-[7px] font-bold text-muted-foreground whitespace-nowrap">{act.time || "TBA"}</span>
-                    <span className="text-[5px] sm:text-[7px] font-black px-0.5 sm:px-1 py-0.5 bg-primary text-primary-foreground rounded uppercase flex-shrink-0">Soon</span>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                      <item.icon className="h-5 w-5" />
+                    </div>
                   </div>
-                ))
-              )}
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* RECENT */}
-          <div className="space-y-4 sm:space-y-6 pt-4 sm:pt-6 border-t border-border/30">
-            <button 
-              onClick={() => setShowRecentActivities(!showRecentActivities)}
-              className="w-full flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-gradient-to-r from-emerald-600/15 to-emerald-600/10 border border-emerald-600/40 hover:border-emerald-600/70 hover:from-emerald-600/25 hover:to-emerald-600/15 transition-all duration-200 group shadow-sm hover:shadow-md active:scale-95"
-            >
-              <h3 className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
-                <CheckCircle2 size={12} className="sm:w-4 sm:h-4 flex-shrink-0" /> Recently Completed
-              </h3>
-              <div className="flex items-center gap-2 sm:gap-3">
-                <Link href="/dashboard/activities?view=history" onClick={(e) => e.stopPropagation()} className="text-[8px] sm:text-[9px] font-black text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 transition-colors">
-                  History <ArrowRight size={10} />
-                </Link>
-                <ChevronDown 
-                  size={14} 
-                  className={`sm:w-4 sm:h-4 text-emerald-600 dark:text-emerald-400 transition-transform duration-300 ${showRecentActivities ? 'rotate-0' : 'rotate-180'}`}
-                />
+          <div className="mt-8 grid gap-4 lg:grid-cols-3">
+            <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-5 shadow-xl shadow-black/10">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Treasury Health</p>
+              <p className="mt-4 text-xl font-semibold text-white">{netBalance === null ? 'Loading…' : rwf(netBalance)}</p>
+              <div className="mt-4">
+                <div className="text-[10px] uppercase tracking-[0.35em] text-slate-500">Balance status</div>
+                <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-800">
+                  <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-cyan-400" style={{ width: `${Math.min(100, Math.max(20, attendancePercent))}%` }} />
+                </div>
+                <p className="mt-2 text-xs text-slate-400">{attendancePercent}% availability and budget coverage.</p>
               </div>
-            </button>
-            {showRecentActivities && (
-              <div className="space-y-3 sm:space-y-4 animate-in fade-in duration-300">
-                {recent.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic opacity-60">No completed events yet.</p>
-                ) : (
-                  recent.map((act) => (
-                    <div key={act.id} className="group block">
-                      <div className="flex gap-2 sm:gap-4 items-center justify-between flex-wrap text-xs sm:text-sm p-3 rounded-lg bg-muted/10 border border-transparent opacity-75 hover:opacity-100 transition-opacity">
-                        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-                          <div className="w-1 bg-muted rounded-full flex-shrink-0" />
-                          <div className="min-w-0">
-                            <p className="font-bold uppercase tracking-tighter text-muted-foreground truncate">{act.name}</p>
-                            <p className="text-[8px] sm:text-[10px] font-medium text-muted-foreground uppercase">{act.date ? (act.date as Date).toLocaleDateString() : ''}</p>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-5 shadow-xl shadow-black/10">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Team Engagement</p>
+              <p className="mt-4 text-xl font-semibold text-white">{avgAttendance}</p>
+              <div className="mt-4 space-y-3">
+                <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.35em] text-slate-500">
+                  <span>Attendance</span>
+                  <span>{attendancePercent}%</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+                  <div className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500" style={{ width: `${attendancePercent}%` }} />
+                </div>
+              </div>
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-5 shadow-xl shadow-black/10">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Active members</p>
+              <p className="mt-4 text-xl font-semibold text-white">{members.length}</p>
+              <p className="mt-4 text-xs text-slate-400">{members.length === 0 ? 'No members yet' : `${members.length} active participants in worship ministry`}</p>
+            </div>
+          </div>
+        </section>
+
+        <div className="grid grid-cols-1 xl:grid-cols-[1.7fr_1.1fr] gap-8">
+          <div className="space-y-6">
+
+            <section className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-6 shadow-2xl shadow-black/20 backdrop-blur-xl">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-primary/70">Broadcast feed</p>
+                  <h2 className="mt-2 text-xl font-semibold text-white">Team announcements</h2>
+                </div>
+              </div>
+
+              <div className="mt-6 space-y-4">
+                <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-4">
+                  <Textarea
+                    value={announcement}
+                    onChange={(event) => setAnnouncement(event.target.value)}
+                    placeholder="Share an update with your worship team..."
+                    className="min-h-[8rem] resize-none bg-slate-950/80 text-white border border-white/10 focus:border-primary/60 focus:ring-1 focus:ring-primary/20"
+                  />
+                  <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-sm text-slate-400">Broadcast updates instantly to your team.</p>
+                    <Button size="sm" onClick={handleBroadcastMessage} className="rounded-full px-4 font-black uppercase tracking-[0.2em] text-[10px]">
+                      Broadcast
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {announcementsList.length === 0 ? (
+                    <p className="text-sm text-slate-400">No announcements yet. Use the panel to broadcast an update.</p>
+                  ) : (
+                    announcementsList.slice(0, 4).map((ann) => (
+                      <div key={ann.id} className="rounded-3xl border border-white/10 bg-slate-900/70 p-4 transition hover:border-primary/40 hover:bg-slate-900/80">
+                        <div className="flex items-center justify-between gap-4">
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{ann.author || 'System'}</p>
+                            <p className="mt-2 text-sm text-white font-semibold">{ann.content}</p>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2 sm:gap-3 text-[9px] sm:text-[12px] flex-shrink-0">
-                          <div className="text-emerald-600 font-bold whitespace-nowrap">P: {act.attendedNbr ?? 0}</div>
-                          <div className="text-destructive font-bold whitespace-nowrap">M: {act.missedNbr ?? Math.max(0, members.length - (act.attendedNbr || 0))}</div>
+                          <span className="text-[10px] uppercase tracking-[0.25em] text-slate-500">{timeAgo(ann.time || ann.createdAt)}</span>
                         </div>
                       </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </section>
+
+            <section className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-6 shadow-2xl shadow-black/20 backdrop-blur-xl">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-primary/70">Activity pulse</p>
+                  <h2 className="mt-2 text-xl font-semibold text-white">Upcoming lineup</h2>
+                </div>
+                <Link href="/dashboard/activities" className="text-xs font-black uppercase tracking-[0.2em] text-primary hover:text-white transition-colors">View schedule</Link>
+              </div>
+
+              <div className="mt-6 space-y-3">
+                {upcoming.length === 0 ? (
+                  <p className="text-sm text-slate-400">No scheduled events right now. Create your next worship service or rehearsal.</p>
+                ) : (
+                  upcoming.slice(0, 5).map((act) => (
+                    <div key={act.id} className="rounded-3xl border border-white/10 bg-slate-900/70 p-4 flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-semibold text-white truncate">{act.name}</p>
+                        <p className="mt-1 text-[11px] text-slate-400 uppercase tracking-[0.2em]">{act.date ? (act.date as Date).toLocaleDateString() : 'TBA'}</p>
+                      </div>
+                      <div className="text-right text-sm text-slate-200">{act.time || 'TBA'}</div>
                     </div>
                   ))
                 )}
               </div>
-            )}
+            </section>
           </div>
 
+          <div className="space-y-6">
+            <section className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-6 shadow-2xl shadow-black/20 backdrop-blur-xl">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-primary/70">Finance overview</p>
+                  <h2 className="mt-2 text-xl font-semibold text-white">Budget snapshot</h2>
+                </div>
+                <span className="text-xs uppercase tracking-[0.25em] text-slate-500">Updated now</span>
+              </div>
+
+              <div className="mt-6 space-y-5">
+                <div>
+                  <div className="flex items-center justify-between text-sm text-slate-400">
+                    <span>Net balance</span>
+                    <span className="text-white font-semibold">{netBalance === null ? '—' : rwf(netBalance)}</span>
+                  </div>
+                  <div className="mt-3 h-3 rounded-full bg-slate-800 overflow-hidden">
+                    <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-lime-400 to-amber-400" style={{ width: `${Math.min(100, Math.max(0, attendancePercent))}%` }} />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between text-sm text-slate-400">
+                    <span>Attendance average</span>
+                    <span className="text-white font-semibold">{avgAttendance}</span>
+                  </div>
+                  <div className="mt-3 h-3 rounded-full bg-slate-800 overflow-hidden">
+                    <div className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-sky-500 to-blue-500" style={{ width: `${attendancePercent}%` }} />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-6 shadow-2xl shadow-black/20 backdrop-blur-xl">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-primary/70">Insight</p>
+                  <h2 className="mt-2 text-xl font-semibold text-white">Team momentum</h2>
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-4">
+                <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-4">
+                  <div className="flex items-center justify-between text-sm text-slate-400">
+                    <span>Members engaged this week</span>
+                    <span className="text-white font-semibold">{members.length > 0 ? `${Math.min(100, members.length * 2)}%` : '—'}</span>
+                  </div>
+                  <div className="mt-3 h-3 rounded-full bg-slate-800 overflow-hidden">
+                    <div className="h-full rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-500" style={{ width: `${members.length > 0 ? Math.min(100, members.length * 2) : 0}%` }} />
+                  </div>
+                </div>
+                <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-4">
+                  <div className="flex items-center justify-between text-sm text-slate-400">
+                    <span>Events on track</span>
+                    <span className="text-white font-semibold">{upcoming.length}</span>
+                  </div>
+                  <div className="mt-3 h-3 rounded-full bg-slate-800 overflow-hidden">
+                    <div className="h-full rounded-full bg-gradient-to-r from-teal-400 to-emerald-400" style={{ width: `${Math.min(100, upcoming.length * 15)}%` }} />
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
         </div>
       </div>
     </div>

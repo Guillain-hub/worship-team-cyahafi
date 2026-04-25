@@ -363,7 +363,7 @@ export default function ActivitiesPage() {
   }
 
   return (
-    <div className="min-h-screen p-2 sm:p-4 md:p-8 space-y-6 md:space-y-8 pb-20 bg-background">
+    <div className="min-h-screen p-2 sm:p-4 md:p-8 space-y-6 md:space-y-8 pb-20 bg-transparent">
       <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
 
         {/* HEADER */}
@@ -403,12 +403,12 @@ export default function ActivitiesPage() {
         </div>
 
         {/* TABLE CONTAINER - Stack on Mobile */}
-        <div className="rounded-xl md:rounded-2xl border border-border/50 bg-card shadow-lg overflow-hidden">
+        <div className="rounded-xl md:rounded-2xl border border-border/50 bg-transparent shadow-lg overflow-hidden">
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-x-auto">
             <Table>
-              <TableHeader className="bg-muted/40">
-                <TableRow className="hover:bg-muted/40">
+              <TableHeader className="bg-transparent">
+                <TableRow className="hover:bg-transparent">
                   <TableHead className="font-black uppercase text-xs tracking-wider">Activity</TableHead>
                   <TableHead className="font-black uppercase text-xs tracking-wider">Schedule</TableHead>
                   <TableHead className="font-black uppercase text-xs tracking-wider">Attendance</TableHead>
@@ -429,7 +429,7 @@ export default function ActivitiesPage() {
                   displayList.map((act, idx) => (
                     <TableRow 
                       key={act.id}
-                      className="hover:bg-muted/30 transition-colors border-b border-border/30"
+                      className="hover:bg-transparent transition-colors border-b border-border/30"
                     >
                       {/* ACTIVITY NAME & LOCATION */}
                       <TableCell className="py-4">
@@ -499,7 +499,7 @@ export default function ActivitiesPage() {
                             </button>
                           </div>
                           {act.attendanceBy && (
-                            <div className="text-xs text-muted-foreground flex items-center gap-1 bg-muted/40 px-2.5 py-1.5 rounded-md w-fit">
+                            <div className="text-xs text-muted-foreground flex items-center gap-1 bg-transparent/40 px-2.5 py-1.5 rounded-md w-fit">
                               <UserCheck size={13} className="flex-shrink-0" />
                               <span className="font-medium">{act.attendanceBy}</span>
                             </div>
@@ -577,7 +577,7 @@ export default function ActivitiesPage() {
               displayList.map((act) => (
                 <div
                   key={act.id}
-                  className="p-3 sm:p-4 rounded-lg border border-border/50 bg-muted/20 space-y-3"
+                  className="p-3 sm:p-4 rounded-lg border border-border/50 bg-transparent/20 space-y-3"
                 >
                   {/* Name & Location */}
                   <div className="space-y-1">
@@ -637,7 +637,7 @@ export default function ActivitiesPage() {
                       </button>
                     </div>
                     {act.attendanceBy && (
-                      <div className="text-xs text-muted-foreground flex items-center gap-1 bg-muted/40 px-2 py-1 rounded w-fit">
+                      <div className="text-xs text-muted-foreground flex items-center gap-1 bg-transparent/40 px-2 py-1 rounded w-fit">
                         <UserCheck size={11} className="flex-shrink-0" />
                         <span className="font-medium">{act.attendanceBy}</span>
                       </div>
@@ -901,7 +901,7 @@ export default function ActivitiesPage() {
                 {selectedMembersList.map((name, idx) => (
                   <li 
                     key={idx} 
-                    className="flex items-center gap-3 p-2 sm:p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors text-sm"
+                    className="flex items-center gap-3 p-2 sm:p-3 rounded-lg bg-transparent/30 hover:bg-transparent/50 transition-colors text-sm"
                   >
                     <div 
                       className={`w-2 h-2 rounded-full flex-shrink-0 ${

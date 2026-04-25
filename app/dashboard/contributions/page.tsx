@@ -255,8 +255,10 @@ export default function ContributionsLandingPage() {
         >
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" />
           <div className="relative w-full bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8 shadow-xl z-50">
-            <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-white">Enter passkey</h3>
-            <p className="text-sm text-white/80 mb-6 sm:mb-8">This section is protected. Enter the passkey to continue.</p>
+            <DialogHeader>
+              <DialogTitle className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-white">Enter passkey</DialogTitle>
+              <DialogDescription className="text-sm text-white/80 mb-6 sm:mb-8">This section is protected. Enter the passkey to continue.</DialogDescription>
+            </DialogHeader>
             
             <div className="space-y-4 sm:space-y-5">
               <div className="space-y-1.5 sm:space-y-2">
@@ -296,9 +298,9 @@ export default function ContributionsLandingPage() {
       </Dialog>
       
       {/* HEADER SECTION: BALANCE CARD */}
-      <div className="bg-card rounded-xl sm:rounded-2xl border border-border shadow-sm overflow-hidden">
+      <div className="bg-transparent rounded-xl sm:rounded-2xl border border-border shadow-sm overflow-hidden">
         <div 
-          className="p-3 sm:p-5 flex flex-col gap-3 sm:gap-4 cursor-pointer hover:bg-muted/20 transition-all"
+          className="p-3 sm:p-5 flex flex-col gap-3 sm:gap-4 cursor-pointer hover:bg-transparent/20 transition-all"
           onClick={() => setShowHistory(!showHistory)}
         >
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 items-start sm:items-center">
@@ -325,7 +327,7 @@ export default function ContributionsLandingPage() {
             >
               <MinusCircle className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" /> New Usage
             </Button>
-            <div className="flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-muted-foreground bg-muted px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl whitespace-nowrap">
+            <div className="flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-muted-foreground bg-transparent px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl whitespace-nowrap">
                <History className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 flex-shrink-0" /> {showHistory ? "Hide History" : "Show History"}
             </div>
           </div>
@@ -333,9 +335,9 @@ export default function ContributionsLandingPage() {
 
         {/* CLEAN HISTORY TABLE (Removed Reference/Event Column) */}
         {showHistory && (
-          <div className="border-t bg-muted/5 animate-in slide-in-from-top-2 duration-200 overflow-x-auto">
+          <div className="border-t bg-transparent/5 animate-in slide-in-from-top-2 duration-200 overflow-x-auto">
             <Table>
-              <TableHeader className="bg-muted/30">
+              <TableHeader className="bg-transparent">
                 <TableRow>
                   <TableHead className="text-[9px] sm:text-[10px] font-bold uppercase py-2 pl-3 sm:pl-6">Date</TableHead>
                   <TableHead className="text-[9px] sm:text-[10px] font-bold uppercase py-2">Usage Description</TableHead>
@@ -347,7 +349,7 @@ export default function ContributionsLandingPage() {
                 {expenses.length === 0 ? (
                   <TableRow><TableCell colSpan={3} className="text-center py-6 sm:py-10 text-muted-foreground text-xs">No records found</TableCell></TableRow>
                 ) : expenses.map((ex, i) => (
-                  <TableRow key={i} className="hover:bg-muted/20 border-b border-border/40">
+                  <TableRow key={i} className="hover:bg-transparent border-b border-border/40">
                     <TableCell className="pl-3 sm:pl-6 py-2 sm:py-3 text-xs text-muted-foreground font-medium whitespace-nowrap">
                       {new Date(ex.date || Date.now()).toLocaleDateString()}
                     </TableCell>
@@ -372,13 +374,13 @@ export default function ContributionsLandingPage() {
       </div>
 
       {/* COLLECTIONS TABLE (Filtered to exclude the hidden internal usage event) */}
-      <Card className="rounded-xl border-border overflow-hidden shadow-sm">
-        <div className="p-3 sm:p-4 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-between items-start sm:items-center border-b bg-muted/10">
+      <Card className="rounded-xl border-border overflow-hidden shadow-sm bg-transparent">
+        <div className="p-3 sm:p-4 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-between items-start sm:items-center border-b bg-transparent/10">
           <div className="relative w-full sm:max-w-xs">
             <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
             <Input 
               placeholder="Search collections..." 
-              className="pl-8 h-9 text-sm rounded-lg border-none bg-background shadow-none w-full" 
+              className="pl-8 h-9 text-sm rounded-lg border-none bg-transparent shadow-none w-full" 
               value={searchTerm} 
               onChange={(e) => setSearchTerm(e.target.value)} 
             />
@@ -433,7 +435,7 @@ export default function ContributionsLandingPage() {
             <div 
               key={ev.id}
               onClick={() => router.push(`/dashboard/contributions/${ev.id}`)}
-              className="bg-muted/30 rounded-lg p-3 space-y-2 border border-border/50 hover:bg-muted/50 transition-all cursor-pointer active:scale-95"
+              className="bg-transparent/30 rounded-lg p-3 space-y-2 border border-border/50 hover:bg-transparent/50 transition-all cursor-pointer active:scale-95"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">

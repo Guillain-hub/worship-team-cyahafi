@@ -19,43 +19,50 @@ export default function DashboardHeader() {
   }
 
   return (
-    <header className="flex h-16 sm:h-20 shrink-0 items-center gap-4 border-b bg-gradient-to-r from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/20 px-4 sm:px-6 transition-all ease-linear shadow-sm z-40">
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-          <Home className="h-5 w-5" />
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/95 backdrop-blur-xl shadow-[0_12px_48px_-24px_rgba(0,0,0,0.8)]">
+      <div className="mx-auto flex h-20 max-w-7xl items-center gap-4 px-4 sm:px-6">
+        <div className="inline-flex items-center gap-3 rounded-3xl border border-white/10 bg-white/5 px-4 py-3 shadow-sm shadow-black/10">
+          <div className="flex h-11 w-11 items-center justify-center rounded-3xl bg-primary text-primary-foreground shadow-md shadow-primary/20">
+            <Home className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-[0.4em] text-slate-400">Dashboard</p>
+            <h1 className="truncate text-base font-semibold text-white sm:text-xl">Worship Team Cyahafi</h1>
+          </div>
         </div>
-        <div>
-          <p className="text-xs uppercase tracking-[0.22em] text-primary/70">Dashboard</p>
-          <h1 className="text-sm sm:text-lg font-semibold text-primary truncate">Worship Team Cyahafi</h1>
+
+        <div className="hidden md:flex items-center gap-3">
+          <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[10px] uppercase tracking-[0.32em] text-slate-400">Premium Platform</div>
+          <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[10px] uppercase tracking-[0.32em] text-slate-400">Secure Cloud</div>
         </div>
-      </div>
-      <div className="ml-auto flex items-center gap-1 sm:gap-2 flex-shrink-0">
-        <AdminNotifications />
-        <Separator orientation="vertical" className="h-8" />
-        <ThemeToggle />
-        <Separator orientation="vertical" className="h-8" />
-        <Link href="/" className="pointer-events-auto" style={{ touchAction: 'manipulation' }}>
+
+        <div className="ml-auto flex items-center gap-2">
+          <AdminNotifications />
+          <Separator orientation="vertical" className="hidden h-8 md:block" />
+          {/* <ThemeToggle /> */}
+          <Link href="/" className="hidden sm:inline-flex" style={{ touchAction: 'manipulation' }}>
+            <Button
+              variant="ghost"
+              size="lg"
+              className="gap-2 text-sm text-slate-200 hover:bg-slate-800 hover:text-white transition-colors"
+              type="button"
+            >
+              <Home className="h-5 w-5" />
+              <span>Home</span>
+            </Button>
+          </Link>
           <Button
             variant="ghost"
             size="lg"
-            className="gap-2 text-sm pointer-events-auto hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
+            onClick={handleLogout}
+            className="gap-2 rounded-3xl border border-red-500/10 bg-red-500/5 px-4 py-3 text-sm font-semibold text-red-200 hover:text-white hover:bg-red-500/20 transition-colors"
             type="button"
+            style={{ touchAction: 'manipulation' }}
           >
-            <Home className="h-5 w-5" />
-            <span className="hidden sm:inline">Home</span>
+            <LogOut className="h-5 w-5" />
+            <span>Logout</span>
           </Button>
-        </Link>
-        <Button
-          variant="ghost"
-          size="lg"
-          onClick={handleLogout}
-          className="gap-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-950 pointer-events-auto transition-colors"
-          type="button"
-          style={{ touchAction: 'manipulation' }}
-        >
-          <LogOut className="h-5 w-5" />
-          <span className="hidden sm:inline">Logout</span>
-        </Button>
+        </div>
       </div>
     </header>
   )

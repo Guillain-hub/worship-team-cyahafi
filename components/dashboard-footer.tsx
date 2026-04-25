@@ -17,8 +17,8 @@ export default function DashboardFooter() {
   }
 
   return (
-    <footer className="fixed bottom-0 inset-x-0 z-40 border-t border-slate-200/10 bg-background/95 backdrop-blur-xl shadow-inner">
-      <div className="mx-auto flex max-w-7xl justify-around px-4 py-2">
+    <footer className="fixed bottom-0 inset-x-0 z-40 border-t border-white/10 bg-slate-950/95 backdrop-blur-xl shadow-inner">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-3">
         {visibleItems.map((item) => {
           const isActive = pathname === item.url
           return (
@@ -27,16 +27,18 @@ export default function DashboardFooter() {
               href={item.url}
               aria-label={item.title}
               className={cn(
-                'inline-flex h-11 w-11 items-center justify-center rounded-2xl transition hover:bg-primary/10 hover:text-primary',
-                isActive ? 'bg-primary/10 text-primary' : 'text-slate-500',
+                'inline-flex min-w-[4.5rem] flex-col items-center justify-center gap-1 rounded-3xl border px-3 py-2 text-xs font-semibold transition-all duration-200',
+                isActive
+                  ? 'border-primary bg-primary/10 text-primary shadow-sm shadow-primary/10'
+                  : 'border-white/10 bg-white/5 text-slate-300 hover:border-white/20 hover:bg-white/10 hover:text-white',
               )}
             >
               <item.icon className="h-5 w-5" aria-hidden="true" />
-              <span className="sr-only">{item.title}</span>
+              <span className="whitespace-nowrap">{item.title}</span>
             </Link>
           )
         })}
-      </div>
+      </nav>
     </footer>
   )
 }

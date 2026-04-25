@@ -75,9 +75,9 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className={`${geist.variable} ${geistMono.variable} font-sans antialiased overflow-x-hidden`}>
+      <body className={`${geist.variable} ${geistMono.variable} font-sans antialiased overflow-x-hidden bg-slate-950 text-slate-100`}>
         {/* <CHANGE> Wrapped children with ThemeProvider for dark/light mode switching */}
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           {/* Provide auth context to client UI; cookie is source-of-truth */}
           <AuthProvider>
             {children}

@@ -196,7 +196,7 @@ export default function ContributionDetail() {
         )}
       </div>
 
-      <div className="px-4 py-2 border-b bg-muted/20">
+      <div className="px-4 py-2 border-b bg-transparent/20">
         <Tabs value={filter} onValueChange={(val: any) => setFilter(val)} className="w-full">
           <TabsList className="grid grid-cols-3 w-full h-8">
             <TabsTrigger value="all" className="text-xs">All Members</TabsTrigger>
@@ -223,7 +223,7 @@ export default function ContributionDetail() {
               const hasAmount = Number(currentAmount) > 0;
               
               return (
-                <TableRow key={m.id} className={`${isChecked ? "bg-emerald-500/5" : ""} active:bg-muted/50 transition-colors`}>
+                <TableRow key={m.id} className={`${isChecked ? "bg-emerald-500/5" : ""} active:bg-transparent transition-colors`}>
                   <TableCell className="px-2 text-center text-[10px] text-muted-foreground">{index + 1}</TableCell>
                   
                   <TableCell className="px-2 py-3">
@@ -253,7 +253,7 @@ export default function ContributionDetail() {
                       className={`w-20 h-8 px-2 border rounded text-xs font-mono ${
                         !isEditingMode 
                           ? "bg-transparent border-transparent text-foreground" 
-                          : "bg-background border-input focus:ring-1 ring-primary/30 outline-none"
+                          : "bg-transparent border-input focus:ring-1 ring-primary/30 outline-none"
                       }`}
                     />
                   </TableCell>
@@ -275,7 +275,7 @@ export default function ContributionDetail() {
       </div>
 
       {event?.locked && (
-        <div className="fixed bottom-0 w-full bg-slate-900 text-white p-2 text-center text-[10px] uppercase font-bold flex items-center justify-center gap-2">
+        <div className="fixed bottom-0 w-full bg-slate-950 text-white p-2 text-center text-[10px] uppercase font-bold flex items-center justify-center gap-2">
           <Lock className="h-3 w-3" /> Records Locked
         </div>
       )}

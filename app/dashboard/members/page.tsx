@@ -203,10 +203,10 @@ export default function MembersPage() {
         />
       </div>
 
-      <Card className="border shadow-sm overflow-hidden">
+      <Card className="border shadow-sm overflow-hidden bg-transparent">
         <div className="overflow-x-auto">
           <Table>
-            <TableHeader className="bg-muted/50">
+            <TableHeader className="bg-transparent">
               <TableRow>
                 <TableHead className="text-xs w-8 sm:w-10">#</TableHead>
                 <TableHead className="text-xs">Member Info</TableHead>
@@ -221,7 +221,7 @@ export default function MembersPage() {
               ) : filteredMembers.map((m, index) => {
                 const roleName = typeof m.role === 'object' ? m.role?.name : (m.role || "Member");
                 return (
-                  <TableRow key={m.id} className="hover:bg-muted/30 cursor-pointer" onClick={() => handleMemberClick(m)}>
+                  <TableRow key={m.id} className="hover:bg-transparent cursor-pointer" onClick={() => handleMemberClick(m)}>
                     <TableCell className="text-xs sm:text-sm font-mono text-muted-foreground text-center py-2 sm:py-4">{index + 1}</TableCell>
                     <TableCell className="py-2 sm:py-4">
                       <div className="flex flex-col">
@@ -346,7 +346,7 @@ export default function MembersPage() {
               ) : memberDetails ? (
                 <div className="space-y-6">
                   {/* Member Info */}
-                  <div className="grid grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg">
+                  <div className="grid grid-cols-2 gap-4 p-4 bg-transparent/30 rounded-lg">
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Phone</p>
                       <p className="text-sm font-medium">{selectedMember.phone || 'N/A'}</p>
@@ -373,7 +373,7 @@ export default function MembersPage() {
                     <div className="space-y-2 max-h-48 overflow-y-auto">
                       {memberDetails.attendances.length > 0 ? (
                         memberDetails.attendances.map((att: any) => (
-                          <div key={att.id} className="flex items-center justify-between p-3 bg-muted/40 rounded-md">
+                          <div key={att.id} className="flex items-center justify-between p-3 bg-transparent/40 rounded-md">
                             <div className="flex-1">
                               <p className="text-sm font-medium">{att.name}</p>
                               <p className="text-xs text-muted-foreground">{new Date(att.date).toLocaleDateString()}</p>
@@ -397,7 +397,7 @@ export default function MembersPage() {
                     <div className="space-y-2 max-h-48 overflow-y-auto">
                       {memberDetails.contributions.length > 0 ? (
                         memberDetails.contributions.map((cont: any) => (
-                          <div key={cont.id} className="flex items-center justify-between p-3 bg-muted/40 rounded-md">
+                          <div key={cont.id} className="flex items-center justify-between p-3 bg-transparent/40 rounded-md">
                             <div className="flex-1">
                               <p className="text-sm font-medium">{cont.name} <span className="text-xs text-muted-foreground ml-1">({cont.type})</span></p>
                               <p className="text-xs text-muted-foreground">{new Date(cont.date).toLocaleDateString()}</p>
