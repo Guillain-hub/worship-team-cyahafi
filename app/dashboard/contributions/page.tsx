@@ -10,7 +10,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
-import { useSidebar } from '@/components/ui/sidebar'
 import { 
   Plus, Pencil, Search, Trash2, 
   Wallet, Loader2, ChevronDown, ChevronRight, MinusCircle,
@@ -20,7 +19,6 @@ import {
 export default function ContributionsLandingPage() {
   const { toast } = useToast()
   const router = useRouter()
-  const { setOpen } = useSidebar()
 
   // Passkey gating - always require entry when visiting this page
   const [unlocked, setUnlocked] = useState<boolean>(false)
@@ -47,12 +45,6 @@ export default function ContributionsLandingPage() {
   const [expenseEditing, setExpenseEditing] = useState(false)
 
   // Close sidebar when passkey is locked
-  useEffect(() => {
-    if (!unlocked) {
-      setOpen(false)
-    }
-  }, [unlocked, setOpen])
-
   const localDateString = (d?: any) => {
     if (!d) return ''
     const dt = new Date(d)

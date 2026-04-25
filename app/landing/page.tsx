@@ -266,8 +266,8 @@ export default function LandingPage() {
           {/* PHOTO GRID GALLERY */}
           {imageItems.length > 0 && (
             <div className="mb-16">
-              {/* Responsive grid: 1 col mobile, 2 tablet, 3 desktop, 4 lg */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+              {/* Responsive grid: 2 cols on small screens, 3 on medium, 4 on large */}
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                 {imageItems.map((item, idx) => (
                   <button
                     key={item.id}
@@ -313,7 +313,7 @@ export default function LandingPage() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                 {videoItems.map((item, idx) => {
                   const thumbnail = getVideoThumbnail(item.url);
                   const ytId = getYouTubeId(item.url);
@@ -327,7 +327,7 @@ export default function LandingPage() {
                       aria-label={`Play video: ${item.caption}`}
                     >
                       <div
-                        className="relative h-[160px] overflow-hidden"
+                        className="relative aspect-video overflow-hidden"
                         style={
                           thumbnail
                             ? { backgroundImage: `url(${thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' }

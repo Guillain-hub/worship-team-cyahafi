@@ -3,7 +3,6 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Home, LogOut } from "lucide-react"
-import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import AdminNotifications from "@/components/admin-notifications"
@@ -20,11 +19,15 @@ export default function DashboardHeader() {
   }
 
   return (
-    <header className="flex h-16 sm:h-20 shrink-0 items-center gap-3 border-b bg-gradient-to-r from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/20 px-4 sm:px-6 transition-[width,height] ease-linear shadow-sm z-40">
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-        <SidebarTrigger className="pointer-events-auto hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors z-50 flex-shrink-0" type="button" style={{ touchAction: 'manipulation' }} />
-        <Separator orientation="vertical" className="mr-1 h-6 flex-shrink-0" />
-        <h1 className="text-sm sm:text-lg font-semibold text-primary truncate">Worship Team Cyahafi</h1>
+    <header className="flex h-16 sm:h-20 shrink-0 items-center gap-4 border-b bg-gradient-to-r from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/20 px-4 sm:px-6 transition-all ease-linear shadow-sm z-40">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+          <Home className="h-5 w-5" />
+        </div>
+        <div>
+          <p className="text-xs uppercase tracking-[0.22em] text-primary/70">Dashboard</p>
+          <h1 className="text-sm sm:text-lg font-semibold text-primary truncate">Worship Team Cyahafi</h1>
+        </div>
       </div>
       <div className="ml-auto flex items-center gap-1 sm:gap-2 flex-shrink-0">
         <AdminNotifications />
